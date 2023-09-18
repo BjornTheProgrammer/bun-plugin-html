@@ -1,0 +1,38 @@
+{
+  "name": "bun-plugin-html",
+  "version": "1.0.0",
+  "module": "index.ts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "description": "A plugin for bun build which allows html entrypoints.",
+  "license": "MIT",
+  "author": "Bjorn Beishline",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "build": "bun run build.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BjornTheProgrammer/bun-plugin-html.git"
+  },
+  "bugs": "https://github.com/BjornTheProgrammer/bun-plugin-html/issues",
+  "keywords": [
+    "bun",
+    "plugin",
+    "build",
+    "bun.build"
+  ],
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "linkedom": "^0.15.3"
+  }
+}
