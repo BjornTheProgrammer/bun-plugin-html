@@ -27,7 +27,8 @@
     "bun.build"
   ],
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "bun-plugin-dts": "^0.2.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
