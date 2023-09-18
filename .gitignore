@@ -172,3 +172,4 @@ dist
 .idea
 **/dist/**
 **/generated/**
+**/.DS_Store
