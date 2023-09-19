@@ -3,28 +3,9 @@ import path from "node:path";
 import html from "../src/index";
 import { expect, test, describe } from "bun:test";
 import { sleep, sleepSync } from "bun";
+import { emptyDir } from "./utils";
 
-function emptyDir(dirPath: string) {
-	const dirContents = fs.readdirSync(dirPath); // List dir content
-
-	for (const fileOrDirPath of dirContents) {
-		try {
-			// Get Full path
-			const fullPath = path.join(dirPath, fileOrDirPath);
-			const stat = fs.statSync(fullPath);
-			if (stat.isDirectory()) {
-				// It's a sub directory
-				if (fs.readdirSync(fullPath).length) emptyDir(fullPath);
-				// If the dir is not empty then remove it's contents too(recursively)
-				fs.rmdirSync(fullPath);
-			} else fs.unlinkSync(fullPath); // It's a file
-		} catch (ex) {
-			console.error((ex as Error).message);
-		}
-	}
-}
-
-describe("Testing Generation of HTML", () => {
+describe("Testing Generation of HTML (no minify)", () => {
 	test("building", async () => {
 		const directory = "./test/generated";
 		if (fs.existsSync(directory)) emptyDir(directory);

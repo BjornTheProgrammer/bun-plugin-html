@@ -1,6 +1,6 @@
 {
   "name": "bun-plugin-html",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "module": "index.ts",
   "type": "module",
   "main": "dist/index.js",
@@ -27,13 +27,16 @@
     "bun.build"
   ],
   "devDependencies": {
-    "bun-types": "latest",
-    "bun-plugin-dts": "^0.2.0"
+    "@types/html-minifier-terser": "^7.0.0",
+    "bun-plugin-dts": "^0.2.0",
+    "bun-types": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "linkedom": "^0.15.3"
+    "linkedom": "^0.15.3",
+    "clean-css": "^5.3.2",
+    "html-minifier-terser": "^7.2.0"
   }
 }

@@ -172,4 +172,5 @@ dist
 .idea
 **/dist/**
 **/generated/**
+**/generated-minify/**
 **/.DS_Store
