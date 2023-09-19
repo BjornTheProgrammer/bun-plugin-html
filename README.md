@@ -96,5 +96,27 @@ The output will be generated in the specified outdir. If certain files cannot be
 </body>
 ```
 
+### Minification
+If you set `minify: true` in the Bun.build config, the following output will be generated
+```
+.
+└── src/
+    ├── index.html
+    ├── main.css
+    ├── main.ts
+    ├── js/
+    │   └── secondary.ts
+    └── images/
+        └── favicon.ico
+└── dist/
+    ├── index.html
+    └── images/
+        └── favicon.ico
+```
+
+```html
+<!DOCTYPE html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background-color:#000;color:#fff}</style><link rel="icon" type="image/x-icon" href="./images/favicon.ico"><title>Hello World!</title></head><body><h1>Hello World</h1><p id="js-target">This should be changed by JS</p><script type="module">console.log("Running JS for browser"),document.querySelector("#js-target").innerHTML="Changed!"</script><script>console.log("in secondary.ts")</script></body>
+```
+
 ## License
 MIT
