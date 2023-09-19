@@ -2,32 +2,22 @@ import fs from 'node:fs';
 import html from "../src/index";
 import { expect, test, describe } from "bun:test";
 import { sleep, sleepSync } from "bun";
-import { emptyDir } from './utils';
+import { emptyDir, testIfFileExists } from './utils';
 
-describe("Testing Generation of HTML (minify)", () => {
-	test("building", async () => {
-		const directory = "./test/generated-minify";
-		if (fs.existsSync(directory)) emptyDir(directory);
+describe("Testing Generation of Minified HTML", async () => {
+	const generationDirectory = './test/generation/minify';
+	const expectedDirectory = './test/expected/minify';
 
-		await Bun.build({
-			entrypoints: ['./test/starting/index.html'],
-			outdir: directory,
-			minify: true,
-			plugins: [html()],
-		})
+	if (fs.existsSync(generationDirectory)) emptyDir(generationDirectory);
 
-		expect(await Bun.file('./test/generated-minify/index.html').exists()).toBe(true);
+	await Bun.build({
+		entrypoints: ['./test/starting/index.html'],
+		outdir: generationDirectory,
+		minify: true,
+		plugins: [html()],
 	})
 
-	test("index.html", async () => {
-		const expected = await Bun.file('./test/expected-minify/index.html').text();
-		const generated = await Bun.file('./test/generated-minify/index.html').text();
-		expect(generated).toBe(expected);
-	});
-
-	test("images/favicon.ico", async () => {
-		const expected = await Bun.file('./test/expected-minify/images/favicon.ico').text();
-		const generated = await Bun.file('./test/generated-minify/images/favicon.ico').text();
-		expect(generated).toBe(expected);
-	});
+	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
+	testIfFileExists(generationDirectory, expectedDirectory, 'images/favicon.ico');
 });
+

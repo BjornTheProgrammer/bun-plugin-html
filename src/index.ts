@@ -151,7 +151,7 @@ function getLastCommonDirectoryIndex(files: File[]) {
  * Take from arnoson
  * https://gist.github.com/arnoson/3237697e8c61dfaf0356f814b1500d7b
  * */
-export const cleanupEmptyFolders = (fs: typeof import('fs'), path: typeof import('path'), folder: string) => {
+const cleanupEmptyFolders = (fs: typeof import('fs'), path: typeof import('path'), folder: string) => {
   if (!fs.statSync(folder).isDirectory()) return
   let files = fs.readdirSync(folder)
 
@@ -165,7 +165,14 @@ export const cleanupEmptyFolders = (fs: typeof import('fs'), path: typeof import
   }
 }
 
-const html = (): import('bun').BunPlugin => {
+export type BunPluginHTMLOptions = {
+	inline: boolean | {
+		css?: boolean;
+		js?: boolean;
+	}
+} 
+
+const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
 	return {
 		name: 'bun-plugin-html',
 		async setup(build) {
@@ -173,6 +180,7 @@ const html = (): import('bun').BunPlugin => {
 			const path = await import('path');
 			const { parseHTML } = await import('linkedom');
 			const { minify } = await import('html-minifier-terser');
+			const CleanCSS = (await import('clean-css')).default;
 
 			for (const entrypoint of build.config.entrypoints) {
 				if (getExtension(entrypoint) !== 'html') continue;
@@ -197,12 +205,22 @@ const html = (): import('bun').BunPlugin => {
 				for (const file of files) {
 					const filePath = file.path.split('/').slice(root + 1).join('/');
 					if (file.type === 'LINK') {
-						if (file.file.type === 'text/css' && build.config.minify) {
-							const linkTag = document.querySelector(`link[href='${file.ref}']`)
-							const styleTag = document.createElement('style');
-							styleTag.innerHTML = await file.file.text();
-							linkTag?.insertAdjacentElement('afterend', styleTag);
-							linkTag?.remove();
+						if (file.file.type === 'text/css') {
+							const fileContents = await file.file.text();
+							const minifiedCSS = new CleanCSS().minify(fileContents).styles
+
+							if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
+								const linkTag = document.querySelector(`link[href='${file.ref}']`)
+								const styleTag = document.createElement('style');
+								styleTag.innerHTML = build.config.minify ? minifiedCSS : fileContents;
+								linkTag?.insertAdjacentElement('afterend', styleTag);
+								linkTag?.remove();
+							} else {
+								const finalDest = path.resolve(process.cwd(), build.config.outdir!, filePath);
+								fs.mkdirSync(path.dirname(finalDest), { recursive: true });
+								if (build.config.minify) Bun.write(finalDest, minifiedCSS);
+								else Bun.write(finalDest, file.file);
+							}
 						} else {
 							const finalDest = path.resolve(process.cwd(), build.config.outdir!, filePath);
 							fs.mkdirSync(path.dirname(finalDest), { recursive: true });
@@ -218,7 +236,7 @@ const html = (): import('bun').BunPlugin => {
 							naming: '[dir]/[name].[ext]',
 						})
 
-						if (build.config.minify) {
+						if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.js === true))) {
 							const scriptRef = convertSrcAttribute(file.ref);
 							const scriptElement = document.querySelector(`script[src='${scriptRef}']`)
 							if (!response.outputs?.length) {

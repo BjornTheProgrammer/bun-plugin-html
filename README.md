@@ -1,40 +1,36 @@
-# bun-plugin-html
+# Bun Plugin for HTML
 
-A Bun plugin allowing `.html` file entrypoints.
+The `bun-plugin-html` is a plugin for the Bun build tool that enables `.html` file entrypoints. This document instructions on how to install, use, and configure the plugin.
 
 ## Installation
+
+You can install `bun-plugin-html` using the following command:
+
 ```bash
 bun add -d bun-plugin-html
 ```
 
 ## Usage
-```ts
-import html from 'bun-plugin-html'
+
+To use this plugin, import it into your code and add it to the list of plugins when building your project with Bun. Here's an example:
+
+```typescript
+import html from 'bun-plugin-html';
 
 await Bun.build({
-	entrypoints: ['./src/index.html', './src/other.html'],
-	outdir: './dist',  // Must be specified!
-	plugins: [
-		html()
-	],
-})
-
-// generates ./dist/index.html and ./dist/other.html, along with their scripts and links
+  entrypoints: ['./src/index.html', './src/other.html'],
+  outdir: './dist',  // Specify the output directory
+  plugins: [
+    html()
+  ],
+});
 ```
+
+This code snippet builds HTML files from the specified entrypoints and places them in the specified output directory, along with their associated scripts and links.
 
 ### Input
-With a file structure like the following, along with the html file, the output below will be generated
-```
-.
-└── src/
-    ├── index.html
-    ├── main.css
-    ├── main.ts
-    ├── js/
-    │   └── secondary.ts
-    └── images/
-        └── favicon.ico
-```
+
+Here is an example of an HTML file (`index.html`) that serves as an input:
 
 ```html
 <!DOCTYPE html>
@@ -53,11 +49,7 @@ With a file structure like the following, along with the html file, the output b
 </body>
 ```
 
-### Output
-The output will be generated in the specified outdir. If certain files cannot be found, the console will output where the issue lies, and the rest of the files will be generated.
-
-<img width="535" alt="Screenshot 2023-09-18 at 7 53 09 AM" src="https://github.com/BjornTheProgrammer/bun-plugin-html/assets/75190918/3498302e-12fe-44d9-a460-88a709263a2b">
-
+Along with a file structure like the one below, the plugin generates the output as described:
 
 ```
 .
@@ -69,6 +61,16 @@ The output will be generated in the specified outdir. If certain files cannot be
     │   └── secondary.ts
     └── images/
         └── favicon.ico
+```
+
+### Output
+
+The plugin generates the output in the specified output directory. If certain files are missing, the console will indicate the issue while generating the rest of the files. The generated output would look like this:
+
+```
+.
+└── src/
+    └── ...
 └── dist/
     ├── index.html
     ├── main.css
@@ -78,6 +80,8 @@ The output will be generated in the specified outdir. If certain files cannot be
     └── images/
         └── favicon.ico
 ```
+
+Here's the transformed HTML file in the output directory (`dist/index.html`):
 
 ```html
 <!DOCTYPE html>
@@ -96,27 +100,52 @@ The output will be generated in the specified outdir. If certain files cannot be
 </body>
 ```
 
-### Minification
-If you set `minify: true` in the Bun.build config, the following output will be generated
-```
-.
-└── src/
-    ├── index.html
-    ├── main.css
-    ├── main.ts
-    ├── js/
-    │   └── secondary.ts
-    └── images/
-        └── favicon.ico
-└── dist/
-    ├── index.html
-    └── images/
-        └── favicon.ico
+## Configuration Options
+
+You can customize the behavior of the `bun-plugin-html` by providing options. Here's the available configuration:
+
+```typescript
+type BunPluginHTMLOptions = {
+  inline: boolean | {
+    css?: boolean;
+    js?: boolean;
+  };
+};
 ```
 
+### Inline Option
+
+By setting the `inline` option to `true`, you can choose to inline CSS and/or JS files within your HTML. Here's an example:
+
 ```html
-<!DOCTYPE html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background-color:#000;color:#fff}</style><link rel="icon" type="image/x-icon" href="./images/favicon.ico"><title>Hello World!</title></head><body><h1>Hello World</h1><p id="js-target">This should be changed by JS</p><script type="module">console.log("Running JS for browser"),document.querySelector("#js-target").innerHTML="Changed!"</script><script>console.log("in secondary.ts")</script></body>
+<!DOCTYPE html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+    body {
+      background-color: #000;
+      color: #fff;
+    }
+  </style>
+	<link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+	<title>Hello World!</title>
+</head>
+<body>
+	<h1>Hello World</h1>
+	<p id="js-target">This should be changed by JS</p>
+	<script>
+    // Content of main.ts
+    console.log("Running JS for browser");
+    document.querySelector("#js-target").innerHTML = "Changed!";
+  </script>
+	<script>
+    // Content of js/secondary.ts
+    console.log("in secondary.ts");
+  </script>
+</body>
 ```
 
 ## License
-MIT
+
+This plugin is licensed under MIT.

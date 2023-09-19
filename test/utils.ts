@@ -1,3 +1,4 @@
+import { expect, test } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -19,4 +20,19 @@ export function emptyDir(dirPath: string) {
 			console.error((ex as Error).message);
 		}
 	}
+}
+
+export function testIfFileExists(generationDirectory: string, expectedDirectory: string, file: string) {
+	const generatedFileLocation = path.resolve(generationDirectory, file);
+	const expectedFileLocation = path.resolve(expectedDirectory, file);
+
+	test(`Checking for ${file}`, async () => {
+		try {
+			const expected = await Bun.file(generatedFileLocation).text();
+			const generated = await Bun.file(expectedFileLocation).text();
+			expect(generated).toBe(expected);
+		} catch (error) {
+			expect().fail(`Could not find file '${file}' in '${generationDirectory}' or '${expectedDirectory}'`)
+		}
+	})
 }

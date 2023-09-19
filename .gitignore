@@ -171,6 +171,5 @@ dist
 # IntelliJ based IDEs
 .idea
 **/dist/**
-**/generated/**
-**/generated-minify/**
+**/generation/**
 **/.DS_Store

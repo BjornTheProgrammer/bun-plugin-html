@@ -1,6 +1,6 @@
 {
   "name": "bun-plugin-html",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "module": "index.ts",
   "type": "module",
   "main": "dist/index.js",
@@ -27,6 +27,7 @@
     "bun.build"
   ],
   "devDependencies": {
+    "@types/clean-css": "^4.2.7",
     "@types/html-minifier-terser": "^7.0.0",
     "bun-plugin-dts": "^0.2.0",
     "bun-types": "latest"
