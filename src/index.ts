@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 /// <reference lib="dom.iterable" />
 
-import { BunFile } from 'bun';
+import { BunFile, BunPlugin } from 'bun';
 
 /// <reference lib="dom.iterable" />
 function isURL(link: string) {
@@ -171,6 +171,7 @@ export type BunPluginHTMLOptions = {
 		js?: boolean;
 	};
     filter?: string[];
+    plugins?: BunPlugin[]; 
 } 
 
 const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
@@ -241,6 +242,7 @@ const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
 							outdir: path.resolve(process.cwd(), build.config.outdir!),
 							root: file.path.split('/').slice(0, root + 1).join('/'),
 							naming: '[dir]/[name].[ext]',
+                            plugins: options?.plugins,
 						})
 
 						if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.js === true))) {

@@ -152,6 +152,10 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
 The `filter` option takes an array of strings. Any files whose extensions match any of those strings will be ignored by
 the plugin.
 
+### Plugins Option
+
+The `plugins` option takes an array of `BunPlugin`s. These plugins will be used when transpiling Java/Typescript files.
+
 ## License
 
 This plugin is licensed under MIT.
