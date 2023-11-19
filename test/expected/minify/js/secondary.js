@@ -1,1 +1,1 @@
-console.log("in secondary.ts");
+console.log("in secondary.tsx");

@@ -166,13 +166,18 @@ const cleanupEmptyFolders = (fs: typeof import('fs'), path: typeof import('path'
 }
 
 export type BunPluginHTMLOptions = {
-	inline: boolean | {
+	inline?: boolean | {
 		css?: boolean;
 		js?: boolean;
-	}
+	};
+    filter?: string[];
 } 
 
 const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
+    let filter: {[key: string]: true} = {};
+    for (const ext of options?.filter ?? []) {
+        filter[ext] = true;
+    }
 	return {
 		name: 'bun-plugin-html',
 		async setup(build) {
@@ -203,6 +208,8 @@ const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
 				const scriptsGeneratedPaths = []
 
 				for (const file of files) {
+                    if (filter?.[getExtension(file.path)]) continue;
+
 					const filePath = file.path.split('/').slice(root + 1).join('/');
 					if (file.type === 'LINK') {
 						if (file.file.type === 'text/css') {

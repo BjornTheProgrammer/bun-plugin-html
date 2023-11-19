@@ -1,2 +1,2 @@
-// test/starting/js/secondary.ts
-console.log("in secondary.ts");
+// test/starting/js/secondary.tsx
+console.log("in secondary.tsx");

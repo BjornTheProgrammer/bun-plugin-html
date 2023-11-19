@@ -9,11 +9,6 @@
 <body>
 	<h1>Hello World</h1>
 	<p id="js-target">This should be changed by JS</p>
-	<script>// test/starting/main.ts
-console.log("Running JS for browser");
-document.querySelector("#js-target").innerHTML = "Changed!";
-</script>
-	<script>// test/starting/js/secondary.tsx
-console.log("in secondary.tsx");
-</script>
+	<script src="main.js"></script>
+	<script src="./js/secondary.js"></script>
 </body>

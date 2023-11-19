@@ -36,3 +36,15 @@ export function testIfFileExists(generationDirectory: string, expectedDirectory:
 		}
 	})
 }
+
+export function testFileDoesntExist(generationDirectory: string, file: string) {
+	const generatedFileLocation = path.resolve(generationDirectory, file);
+
+	test(`Checking that ${file} does NOT exist`, async () => {
+		try {
+			expect(await Bun.file(generatedFileLocation).exists()).toBeFalse();
+		} catch (error) {
+			expect().fail(`Found '${file}' in '${generationDirectory}' when it shouldn't exist`)
+		}
+	})
+}
