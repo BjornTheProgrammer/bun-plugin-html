@@ -54,6 +54,9 @@ export const cleanupEmptyFolders = (folder: string) => {
 export function findLastCommonPath(paths: string[]) {
 	if (paths.length === 0) return '';
 
+	const allPathsIdentical = paths.every(p => p === paths[0]);
+	if (allPathsIdentical) return path.dirname(paths[0]);
+
 	// Normalize paths and split them
 	let splitPaths = paths.map(p => path.normalize(p).split(path.sep));
 	let commonPath = [];
