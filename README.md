@@ -152,6 +152,8 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
 The `filter` option takes an array of strings. Any files whose extensions match any of those strings will be ignored by
 the plugin.
 
+The extension name follows the same format as the [path.extname](https://nodejs.org/api/path.html#pathextnamepath) return.
+
 ### Plugins Option
 
 The `plugins` option takes an array of `BunPlugin`s. These plugins will be used when transpiling Java/Typescript files.
