@@ -13,7 +13,7 @@ describe("Testing Generation of HTML", async () => {
 	await Bun.build({
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
-		plugins: [html({filter: ['css', 'ico', 'tsx']})],
+		plugins: [html({filter: ['.css', '.ico', '.tsx']})],
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

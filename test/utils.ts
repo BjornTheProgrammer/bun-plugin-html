@@ -32,6 +32,7 @@ export function testIfFileExists(generationDirectory: string, expectedDirectory:
 			const generated = await Bun.file(expectedFileLocation).text();
 			expect(generated).toBe(expected);
 		} catch (error) {
+			console.error(error);
 			expect().fail(`Could not find file '${file}' in '${generationDirectory}' or '${expectedDirectory}'`)
 		}
 	})
@@ -44,6 +45,7 @@ export function testFileDoesntExist(generationDirectory: string, file: string) {
 		try {
 			expect(await Bun.file(generatedFileLocation).exists()).toBeFalse();
 		} catch (error) {
+			console.error(error);
 			expect().fail(`Found '${file}' in '${generationDirectory}' when it shouldn't exist`)
 		}
 	})
