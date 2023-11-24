@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 /// <reference lib="dom.iterable" />
 
-import { BunFile } from 'bun';
+import { BunFile, BunPlugin } from 'bun';
 
 /// <reference lib="dom.iterable" />
 function isURL(link: string) {
@@ -166,13 +166,19 @@ const cleanupEmptyFolders = (fs: typeof import('fs'), path: typeof import('path'
 }
 
 export type BunPluginHTMLOptions = {
-	inline: boolean | {
+	inline?: boolean | {
 		css?: boolean;
 		js?: boolean;
-	}
+	};
+    filter?: string[];
+    plugins?: BunPlugin[]; 
 } 
 
 const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
+    let filter: {[key: string]: true} = {};
+    for (const ext of options?.filter ?? []) {
+        filter[ext] = true;
+    }
 	return {
 		name: 'bun-plugin-html',
 		async setup(build) {
@@ -203,6 +209,8 @@ const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
 				const scriptsGeneratedPaths = []
 
 				for (const file of files) {
+                    if (filter?.[getExtension(file.path)]) continue;
+
 					const filePath = file.path.split('/').slice(root + 1).join('/');
 					if (file.type === 'LINK') {
 						if (file.file.type === 'text/css') {
@@ -234,6 +242,7 @@ const html = (options?: BunPluginHTMLOptions): import('bun').BunPlugin => {
 							outdir: path.resolve(process.cwd(), build.config.outdir!),
 							root: file.path.split('/').slice(0, root + 1).join('/'),
 							naming: '[dir]/[name].[ext]',
+                            plugins: options?.plugins,
 						})
 
 						if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.js === true))) {
