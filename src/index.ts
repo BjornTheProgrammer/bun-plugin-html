@@ -151,7 +151,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 
 									element!.removeAttribute('src')
 									const scriptFile = Bun.file(response.outputs[0].path);
-									element!.innerHTML = await scriptFile.text();
+									element!.innerHTML = (await scriptFile.text()).replaceAll(/(<)(\/script>)/g, '\\x3C$2');
 									fs.unlinkSync(response.outputs[0].path);
 								} else {
 									element?.setAttribute(file.attribute.name, changeFileExtension(file.attribute.value, '.js'));
