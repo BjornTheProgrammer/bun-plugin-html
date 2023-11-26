@@ -84,9 +84,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				const { document } = parseHTML(await entrypointFile.text());
 
 				const files = await getAllFiles(document, entrypoint);
-				const paths = files.map(file => file.path);
-				const commonPath = findLastCommonPath(paths);
-
+				
 				files.push({
 					path: path.resolve(entrypoint),
 					file: entrypointFile,
@@ -95,6 +93,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 						value: entrypoint
 					}
 				})
+
+				const paths = files.map(file => file.path);
+				const commonPath = findLastCommonPath(paths);
 
 				for (const file of files) {
 					if (options?.filter?.includes(path.extname(file.path))) continue;
@@ -190,8 +191,13 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				cleanupEmptyFolders(path.resolve(process.cwd(), build.config.outdir!))
 			}
 
-			build.onLoad({ filter: /\.(html)$/ }, async (args) => {
-				return { exports: { HTMLParserPluginExportMentToBeUnused: "asdf" }, loader: 'object' }
+			build.onLoad({ filter: /\.(html|htm)$/ }, async (args) => {
+				return {
+					exports: {
+						default: await Bun.file(args.path).text()
+					},
+					loader: "object", // special loader for JS objects
+				};
 			});
 		}
 	}
