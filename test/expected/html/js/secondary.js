@@ -7389,12 +7389,12 @@ var require_react_dom_development = __commonJS((exports) => {
       var SyntheticWheelEvent = createSyntheticEvent(WheelEventInterface);
       var END_KEYCODES = [9, 13, 27, 32];
       var START_KEYCODE = 229;
-      var canUseCompositionEvent = canUseDOM && ("CompositionEvent" in window);
+      var canUseCompositionEvent = canUseDOM && "CompositionEvent" in window;
       var documentMode = null;
-      if (canUseDOM && ("documentMode" in document)) {
+      if (canUseDOM && "documentMode" in document) {
         documentMode = document.documentMode;
       }
-      var canUseTextInputEvent = canUseDOM && ("TextEvent" in window) && !documentMode;
+      var canUseTextInputEvent = canUseDOM && "TextEvent" in window && !documentMode;
       var useFallbackCompositionData = canUseDOM && (!canUseCompositionEvent || documentMode && documentMode > 8 && documentMode <= 11);
       var SPACEBAR_CODE = 32;
       var SPACEBAR_CHAR = String.fromCharCode(SPACEBAR_CODE);
@@ -7437,7 +7437,7 @@ var require_react_dom_development = __commonJS((exports) => {
       }
       function getDataFromCustomEvent(nativeEvent) {
         var detail = nativeEvent.detail;
-        if (typeof detail === "object" && ("data" in detail)) {
+        if (typeof detail === "object" && "data" in detail) {
           return detail.data;
         }
         return null;
@@ -8073,7 +8073,7 @@ var require_react_dom_development = __commonJS((exports) => {
           setOffsets(input, offsets);
         }
       }
-      var skipSelectionChangeEvent = canUseDOM && ("documentMode" in document) && document.documentMode <= 11;
+      var skipSelectionChangeEvent = canUseDOM && "documentMode" in document && document.documentMode <= 11;
       function registerEvents$3() {
         registerTwoPhaseEvent("onSelect", ["focusout", "contextmenu", "dragend", "focusin", "keydown", "keyup", "mousedown", "mouseup", "selectionchange"]);
       }
@@ -8082,7 +8082,7 @@ var require_react_dom_development = __commonJS((exports) => {
       var lastSelection = null;
       var mouseDown = false;
       function getSelection$1(node) {
-        if (("selectionStart" in node) && hasSelectionCapabilities(node)) {
+        if ("selectionStart" in node && hasSelectionCapabilities(node)) {
           return {
             start: node.selectionStart,
             end: node.selectionEnd
@@ -8187,7 +8187,7 @@ var require_react_dom_development = __commonJS((exports) => {
         }
         var prefixMap = vendorPrefixes[eventName];
         for (var styleProp in prefixMap) {
-          if (prefixMap.hasOwnProperty(styleProp) && (styleProp in style)) {
+          if (prefixMap.hasOwnProperty(styleProp) && styleProp in style) {
             return prefixedEventNames[eventName] = prefixMap[styleProp];
           }
         }

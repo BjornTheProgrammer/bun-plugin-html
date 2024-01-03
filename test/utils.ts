@@ -28,12 +28,23 @@ export function testIfFileExists(generationDirectory: string, expectedDirectory:
 
 	test(`Checking for ${file}`, async () => {
 		try {
-			const expected = await Bun.file(generatedFileLocation).text();
-			const generated = await Bun.file(expectedFileLocation).text();
-			expect(generated).toBe(expected);
+			const expected = Bun.file(generatedFileLocation);
+			const generated = Bun.file(expectedFileLocation);
+
+			if (!await expected.exists()) {
+				throw new Error(`Could not find file '${file}' in '${expectedDirectory}'`);
+			} else if (!await generated.exists()) {
+				throw new Error(`Could not find file '${file}' in '${generationDirectory}'`);
+			}
+
+			const expectedText = await expected.text();
+			const generatedText = await generated.text();
+
+			if (expectedText !== generatedText) throw new Error(`File '${file}' in '${generationDirectory}' does not match '${expectedDirectory}'`);
+
+			expect().pass('Files exist and match');
 		} catch (error) {
-			console.error(error);
-			expect().fail(`Could not find file '${file}' in '${generationDirectory}' or '${expectedDirectory}'`)
+			expect().fail((error as Error).message)
 		}
 	})
 }

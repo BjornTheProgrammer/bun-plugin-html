@@ -192,12 +192,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			}
 
 			build.onLoad({ filter: /\.(html|htm)$/ }, async (args) => {
-				return {
-					exports: {
-						default: await Bun.file(args.path).text()
-					},
-					loader: "object", // special loader for JS objects
-				};
+				throw new Error('bun-plugin-html does not support output information at this time.');
 			});
 		}
 	}
