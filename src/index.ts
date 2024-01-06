@@ -116,7 +116,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				const cssOptions = options?.cssOptions ?? defaultCssOptions;
 				let htmlOptions = options?.htmlOptions ?? defaultHtmlOptions;
 				// take the user-specified value if provided, otherwise defer to presence/absence of configuration in cssOptions
-				htmlOptions.minifyCSS = options?.htmlOptions?.minifyCSS ?? Object.keys(cssOptions).length > 0;
+				htmlOptions.minifyCSS = options?.htmlOptions?.minifyCSS ?? cssOptions;
 				const minifier = new CleanCSS(cssOptions);
 
 				for (const file of files) {
