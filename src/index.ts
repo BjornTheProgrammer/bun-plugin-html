@@ -16,11 +16,15 @@ export type BunPluginHTMLOptions = {
 		css?: boolean;
 		js?: boolean;
 	};
+	build?: string[];
+	excludeSelectors?: string[];
 	filter?: string[];
-	plugins?: BunPlugin[]; 
-} 
+	plugins?: BunPlugin[];
+}
 
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
+const extensionsToBuild: readonly string[] = ['.js', '.jsx', '.ts', '.tsx'] as const;
+const selectorsToExclude: readonly string[] = ['a'] as const;
 
 export type File = {
 	path: string,
@@ -31,10 +35,9 @@ export type File = {
 	}
 };
 
-async function getAllFiles(document: Document, entrypoint: string): Promise<File[]> {
+async function getAllFiles(document: Document, entrypoint: string, selector: string): Promise<File[]> {
 	const files: File[] = [];
-
-	for (const element of document.querySelectorAll('*')) {
+	for (const element of document.querySelectorAll(selector)) {
 		let attributeName, attributeValue;
 
 		for (const attribute of attributesToSearch) {
@@ -83,8 +86,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				let entrypointFile = Bun.file(entrypoint);
 				const { document } = parseHTML(await entrypointFile.text());
 
-				const files = await getAllFiles(document, entrypoint);
-				
+				const excluded = options?.excludeSelectors ? options.excludeSelectors.concat(selectorsToExclude) : selectorsToExclude;
+				const files = await getAllFiles(document, entrypoint, `:not(${excluded.join(', ')})`);
+
 				files.push({
 					path: path.resolve(entrypoint),
 					file: entrypointFile,
@@ -96,16 +100,18 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 
 				const paths = files.map(file => file.path);
 				const commonPath = findLastCommonPath(paths);
+				const buildExtensions = options?.build ? options.build.concat(extensionsToBuild) : extensionsToBuild;
 
 				for (const file of files) {
-					if (options?.filter?.includes(path.extname(file.path))) continue;
+					const extension = path.extname(file.path);
+					if (options?.filter?.includes(extension)) continue;
 
 					switch (path.extname(file.path)) {
 						case '.css':
 							{
 								const fileContents = await file.file.text();
 								const minifiedCSS = new CleanCSS().minify(fileContents).styles
-								
+
 								if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
 									const element = findElementFromAttibute(document, file.attribute);
 									const styleTag = document.createElement('style');
@@ -117,45 +123,6 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 									fs.mkdirSync(path.dirname(finalDest), { recursive: true });
 									if (build.config.minify) Bun.write(finalDest, minifiedCSS);
 									else Bun.write(finalDest, file.file);
-								}
-							}
-							break;
-						case '.tsx':
-						case '.jsx':
-						case '.js':
-						case '.ts':
-							{
-								const response = await Bun.build({
-									entrypoints: [file.path],
-									minify: build.config.minify,
-									sourcemap: build.config.sourcemap,
-									outdir: path.resolve(process.cwd(), build.config.outdir!),
-									root: commonPath,
-									naming: '[dir]/[name].[ext]',
-									plugins: options?.plugins,
-								});
-
-								const element = findElementFromAttibute(document, file.attribute);
-
-								if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.js === true))) {
-									if (!response.outputs?.length) {
-										const fileText = (document.toString()).replace(/\t/g, '    ');
-										const search = `${file.attribute.name}="${file.attribute.value}"`;
-										const line = returnLineNumberOfOccurance(fileText, search);
-										const columnNumber = getColumnNumber(fileText, fileText.indexOf(search) + search.length / 2) + `${line}`.length + 1;
-										console.log(getLines(fileText, 4, line + 1));
-										console.log('^'.padStart(columnNumber))
-										console.error(`HTMLParseError: Specified <${element?.tagName}> ${file.attribute.name} '${file.attribute.value}' failed to build`)
-										console.log(`      at ${entrypoint}:${line}:${columnNumber}`)
-										continue;	
-									}
-
-									element!.removeAttribute('src')
-									const scriptFile = Bun.file(response.outputs[0].path);
-									element!.innerHTML = (await scriptFile.text()).replaceAll(/(<)(\/script>)/g, '\\x3C$2');
-									fs.unlinkSync(response.outputs[0].path);
-								} else {
-									element?.setAttribute(file.attribute.name, changeFileExtension(file.attribute.value, '.js'));
 								}
 							}
 							break;
@@ -179,6 +146,41 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							}
 							break;
 						default:
+							if (buildExtensions.includes(extension)) {
+								const response = await Bun.build({
+									entrypoints: [file.path],
+									minify: build.config.minify,
+									sourcemap: build.config.sourcemap,
+									outdir: path.resolve(process.cwd(), build.config.outdir!),
+									root: commonPath,
+									naming: '[dir]/[name].[ext]',
+									plugins: options?.plugins,
+								});
+
+								const element = findElementFromAttibute(document, file.attribute);
+
+								if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.js === true))) {
+									if (!response.outputs?.length) {
+										const fileText = (document.toString()).replace(/\t/g, '    ');
+										const search = `${file.attribute.name}="${file.attribute.value}"`;
+										const line = returnLineNumberOfOccurance(fileText, search);
+										const columnNumber = getColumnNumber(fileText, fileText.indexOf(search) + search.length / 2) + `${line}`.length + 1;
+										console.log(getLines(fileText, 4, line + 1));
+										console.log('^'.padStart(columnNumber))
+										console.error(`HTMLParseError: Specified <${element?.tagName}> ${file.attribute.name} '${file.attribute.value}' failed to build`)
+										console.log(`      at ${entrypoint}:${line}:${columnNumber}`)
+										continue;
+									}
+
+									element!.removeAttribute('src')
+									const scriptFile = Bun.file(response.outputs[0].path);
+									element!.innerHTML = (await scriptFile.text()).replaceAll(/(<)(\/script>)/g, '\\x3C$2');
+									fs.unlinkSync(response.outputs[0].path);
+								} else {
+									element?.setAttribute(file.attribute.name, changeFileExtension(file.attribute.value, '.js'));
+								}
+							}
+							else
 							{
 								const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
 								fs.mkdirSync(path.dirname(finalDest), { recursive: true });
