@@ -7,8 +7,8 @@ import { BunFile, BunPlugin } from 'bun';
 
 import { parseHTML } from 'linkedom';
 import { beforeAll } from 'bun:test';
-import { minify } from 'html-minifier-terser';
-import CleanCSS from 'clean-css';
+import { minify, Options } from 'html-minifier-terser';
+import CleanCSS, { OptionsOutput } from 'clean-css';
 import { changeFileExtension, cleanupEmptyFolders, findElementFromAttibute, findLastCommonPath, getColumnNumber, getLines, isURL, removeCommonPath, returnLineNumberOfOccurance } from './utils';
 
 export type BunPluginHTMLOptions = {
@@ -20,11 +20,23 @@ export type BunPluginHTMLOptions = {
 	excludeSelectors?: string[];
 	filter?: string[];
 	plugins?: BunPlugin[];
+	cssOptions?: OptionsOutput;
+	htmlOptions?: Options;
 }
 
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
 const extensionsToBuild: readonly string[] = ['.js', '.jsx', '.ts', '.tsx'] as const;
 const selectorsToExclude: readonly string[] = ['a'] as const;
+const defaultCssOptions: OptionsOutput = {} as const;
+const defaultHtmlOptions: Options = {
+	collapseWhitespace: true,
+	collapseInlineTagWhitespace: true,
+	caseSensitive: true,
+	minifyCSS: true,
+	minifyJS: true,
+	removeComments: true,
+	removeRedundantAttributes: true,
+} as const;
 
 export type File = {
 	path: string,
@@ -101,6 +113,11 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				const paths = files.map(file => file.path);
 				const commonPath = findLastCommonPath(paths);
 				const buildExtensions = options?.build ? options.build.concat(extensionsToBuild) : extensionsToBuild;
+				const cssOptions = options?.cssOptions ? { ...defaultCssOptions, ...options.cssOptions } : defaultCssOptions;
+				let htmlOptions = options?.htmlOptions ? { ...defaultHtmlOptions, ...options.htmlOptions } : defaultHtmlOptions;
+				// take the user-specified value if provided, otherwise defer to presence/absence of configuration in cssOptions
+				htmlOptions.minifyCSS = options?.htmlOptions?.minifyCSS ?? Object.keys(cssOptions).length > 0;
+				const minifier = new CleanCSS(cssOptions);
 
 				for (const file of files) {
 					const extension = path.extname(file.path);
@@ -109,20 +126,29 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 					switch (path.extname(file.path)) {
 						case '.css':
 							{
-								const fileContents = await file.file.text();
-								const minifiedCSS = new CleanCSS().minify(fileContents).styles
+								let content = await file.file.text();
+								if (build.config.minify) {
+									const output = minifier.minify(content);
+									if (output.warnings.length > 0) {
+										console.warn("Finished minifying", file.path, "with warnings:", output.warnings);
+									}
+									if (output.errors.length > 0) {
+										console.error("Finished minifying", file.path, "with errors:", output.errors);
+										continue;
+									}
+									content = output.styles;
+								}
 
 								if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
 									const element = findElementFromAttibute(document, file.attribute);
 									const styleTag = document.createElement('style');
-									styleTag.innerHTML = build.config.minify ? minifiedCSS : fileContents;
+									styleTag.innerHTML = content;
 									element?.insertAdjacentElement('afterend', styleTag);
 									element?.remove();
 								} else {
 									const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
 									fs.mkdirSync(path.dirname(finalDest), { recursive: true });
-									if (build.config.minify) Bun.write(finalDest, minifiedCSS);
-									else Bun.write(finalDest, file.file);
+									Bun.write(finalDest, content);
 								}
 							}
 							break;
@@ -132,15 +158,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 								const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
 								fs.mkdirSync(path.dirname(finalDest), { recursive: true });
 
-								const fileContents = build.config.minify ? await minify(document.toString(), {
-									collapseWhitespace: true,
-									collapseInlineTagWhitespace: true,
-									caseSensitive: true,
-									minifyCSS: true,
-									minifyJS: true,
-									removeComments: true,
-									removeRedundantAttributes: true,
-								}) : document.toString();
+								const fileContents = build.config.minify ? await minify(document.toString(), htmlOptions) : document.toString();
 
 								Bun.write(finalDest, fileContents);
 							}
@@ -180,8 +198,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 									element?.setAttribute(file.attribute.name, changeFileExtension(file.attribute.value, '.js'));
 								}
 							}
-							else
-							{
+							else {
 								const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
 								fs.mkdirSync(path.dirname(finalDest), { recursive: true });
 								Bun.write(finalDest, file.file);

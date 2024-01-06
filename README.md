@@ -110,6 +110,8 @@ type BunPluginHTMLOptions = {
     css?: boolean;
     js?: boolean;
   };
+  cssOptions?: CleanCSS.OptionsOutput
+  htmlOptions?: Options;
   build?: string[];
   excludeSelectors?: string[];
   filter?: string[];
@@ -149,10 +151,40 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
 </body>
 ```
 
+### CssOptions option
+The `cssOptions` option is used to configure `clean-css`. A reference of options can be found 
+[here](https://github.com/clean-css/clean-css?tab=readme-ov-file#constructor-options).
+
+
+### HtmlOptions Option
+
+The `htmlOptions` option is used to configure `html-minifier-terser`. A reference of options can be found 
+[here](https://github.com/terser/html-minifier-terser?tab=readme-ov-file#options-quick-reference).
+
+The default options used are:
+```
+{
+	collapseWhitespace: true,
+	collapseInlineTagWhitespace: true,
+	caseSensitive: true,
+	minifyCSS: true,
+	minifyJS: true,
+	removeComments: true,
+	removeRedundantAttributes: true,
+}
+```
+
+**Note: passing `cssOptions` sets the default value for the `minifyCSS` property of this object to `false`, unless 
+explicitly set in `htmlOptions`**
+
+
 ### Build Option
 
 The `build` option takes an array of strings. Any files whose extensions match any of those strings will be passed to 
-`Bun.build` in addition to `['.js', '.jsx', '.ts', '.tsx']`, you must ensure an appropriate plugin is included.
+`Bun.build` (in addition to `['.js', '.jsx', '.ts', '.tsx']`).
+
+**Note: you must ensure an appropriate plugin is included for each file extension.**
+
 
 ### ExcludeSelectors Option
 
