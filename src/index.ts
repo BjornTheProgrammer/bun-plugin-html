@@ -27,8 +27,8 @@ export type BunPluginHTMLOptions = {
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
 const extensionsToBuild: readonly string[] = ['.js', '.jsx', '.ts', '.tsx'] as const;
 const selectorsToExclude: readonly string[] = ['a'] as const;
-const defaultCssOptions: OptionsOutput = {} as const;
-const defaultHtmlOptions: Options = {
+export const defaultCssOptions: OptionsOutput = {} as const;
+export const defaultHtmlOptions: Options = {
 	collapseWhitespace: true,
 	collapseInlineTagWhitespace: true,
 	caseSensitive: true,
@@ -113,8 +113,8 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				const paths = files.map(file => file.path);
 				const commonPath = findLastCommonPath(paths);
 				const buildExtensions = options?.build ? options.build.concat(extensionsToBuild) : extensionsToBuild;
-				const cssOptions = options?.cssOptions ? { ...defaultCssOptions, ...options.cssOptions } : defaultCssOptions;
-				let htmlOptions = options?.htmlOptions ? { ...defaultHtmlOptions, ...options.htmlOptions } : defaultHtmlOptions;
+				const cssOptions = options?.cssOptions ?? defaultCssOptions;
+				let htmlOptions = options?.htmlOptions ?? defaultHtmlOptions;
 				// take the user-specified value if provided, otherwise defer to presence/absence of configuration in cssOptions
 				htmlOptions.minifyCSS = options?.htmlOptions?.minifyCSS ?? Object.keys(cssOptions).length > 0;
 				const minifier = new CleanCSS(cssOptions);

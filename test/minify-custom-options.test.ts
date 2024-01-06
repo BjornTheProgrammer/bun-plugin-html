@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import html from "../src/index";
+import html, { defaultCssOptions, defaultHtmlOptions } from "../src/index";
 import { expect, test, describe } from "bun:test";
 import { sleep, sleepSync } from "bun";
 import { emptyDir, testIfFileExists } from './utils';
@@ -15,8 +15,8 @@ describe("Testing Generation of Minified HTML", async () => {
 		outdir: generationDirectory,
 		minify: true,
 		plugins: [html({
-			cssOptions: { format: { semicolonAfterLastProperty: true } },
-			htmlOptions: { removeStyleLinkTypeAttributes: true, }
+			cssOptions: { ...defaultCssOptions, format: { semicolonAfterLastProperty: true } },
+			htmlOptions: { ...defaultHtmlOptions, removeStyleLinkTypeAttributes: true }
 		})],
 	})
 
