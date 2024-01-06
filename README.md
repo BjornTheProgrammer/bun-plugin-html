@@ -110,6 +110,8 @@ type BunPluginHTMLOptions = {
     css?: boolean;
     js?: boolean;
   };
+  build?: string[];
+  excludeSelectors?: string[];
   filter?: string[];
 };
 ```
@@ -146,6 +148,16 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
   </script>
 </body>
 ```
+
+### Build Option
+
+The `build` option takes an array of strings. Any files whose extensions match any of those strings will be passed to 
+`Bun.build` in addition to `['.js', '.jsx', '.ts', '.tsx']`, you must ensure an appropriate plugin is included.
+
+### ExcludeSelectors Option
+
+The `excludeSelectors` option takes an array of strings. Any HTML elements matched by a selector will be ignored by the
+plugin.
 
 ### Filter Option
 
