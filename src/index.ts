@@ -204,13 +204,13 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							if (buildExtensions.includes(extension)) {
 								const response = await Bun.build({
 									entrypoints: [file.path],
-									minify: build.config.minify && (htmlOptions.minifyJS === true || htmlOptions.minifyJS === undefined),
+									minify: build.config.minify,
 									sourcemap: build.config.sourcemap,
 									outdir: path.resolve(process.cwd(), build.config.outdir!),
 									root: commonPath,
 									naming: '[dir]/[name].[ext]',
 									plugins: options?.plugins,
-								}).then(jsMinifier);
+								});
 
 								const element = findElementFromAttibute(document, file.attribute);
 
