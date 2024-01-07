@@ -3,36 +3,35 @@
 
 import fs from 'fs'
 import path from 'path';
-import { BunFile, BunPlugin } from 'bun';
+import { BunFile, BunPlugin, BuildConfig, BuildOutput } from 'bun';
 
 import { parseHTML } from 'linkedom';
 import { beforeAll } from 'bun:test';
 import { minify, Options } from 'html-minifier-terser';
 import CleanCSS, { OptionsOutput } from 'clean-css';
 import { changeFileExtension, cleanupEmptyFolders, findElementFromAttibute, findLastCommonPath, getColumnNumber, getLines, isURL, removeCommonPath, returnLineNumberOfOccurance } from './utils';
+import { minify as terser, MinifyOptions } from 'terser';
 
 export type BunPluginHTMLOptions = {
 	inline?: boolean | {
 		css?: boolean;
 		js?: boolean;
 	};
-	build?: string[];
+	minifyOptions?: Options;
+	includeExtension?: string[];
 	excludeSelectors?: string[];
 	filter?: string[];
 	plugins?: BunPlugin[];
-	cssOptions?: OptionsOutput;
-	htmlOptions?: Options;
 }
 
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
 const extensionsToBuild: readonly string[] = ['.js', '.jsx', '.ts', '.tsx'] as const;
 const selectorsToExclude: readonly string[] = ['a'] as const;
-export const defaultCssOptions: OptionsOutput = {} as const;
-export const defaultHtmlOptions: Options = {
+export const defaultMinifyOptions: Options = {
 	collapseWhitespace: true,
 	collapseInlineTagWhitespace: true,
 	caseSensitive: true,
-	minifyCSS: true,
+	minifyCSS: {},
 	minifyJS: true,
 	removeComments: true,
 	removeRedundantAttributes: true,
@@ -88,6 +87,58 @@ async function getAllFiles(document: Document, entrypoint: string, selector: str
 	return files;
 }
 
+function getCSSMinifier(config: BuildConfig, options: Options): (text: string) => string {
+	if (config.minify && options.minifyCSS !== false) {
+		if (typeof options.minifyCSS === 'function') {
+			return options.minifyCSS as (text: string) => string;
+		} else {
+			const cssOptions = typeof options.minifyCSS === 'object' ? options.minifyCSS as OptionsOutput : {};
+			const minifier = new CleanCSS(cssOptions);
+
+			return (text: string) => {
+				const output = minifier.minify(text);
+				output.warnings.forEach(console.warn);
+				if (output.errors.length > 0) {
+					output.errors.forEach(console.error);
+					return text;
+				}
+				return output.styles;
+			};
+		}
+	} else {
+		return (text: string) => text;
+	}
+}
+function getJSMinifier(config: BuildConfig, options: Options): (result: BuildOutput) => Promise<BuildOutput> {
+	const noop = async (result: BuildOutput) => result;
+	if (config.minify) {
+		return async (result: BuildOutput) => {
+			if (result.success && result.outputs?.length > 0) {
+				const file = Bun.file(result.outputs[0].path);
+				return file.text()
+					.then(async text => {
+						if (typeof options.minifyJS === 'function') {
+							return options.minifyJS(text, false);
+						} else if (typeof options.minifyJS === 'object') {
+							const result = await terser(text, options.minifyJS as MinifyOptions)
+							return result.code ? result.code : text;
+						} else {
+							return text;
+						}
+					})
+					.then(content => {
+						Bun.write(file, content);
+						return result;
+					})
+					.catch(err => {
+						console.error(err);
+						return result;
+					});
+			} else return result;
+		}
+	} else return noop;
+}
+
 const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 	return {
 		name: 'bun-plugin-html',
@@ -112,12 +163,10 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 
 				const paths = files.map(file => file.path);
 				const commonPath = findLastCommonPath(paths);
-				const buildExtensions = options?.build ? options.build.concat(extensionsToBuild) : extensionsToBuild;
-				const cssOptions = options?.cssOptions ?? defaultCssOptions;
-				let htmlOptions = options?.htmlOptions ?? defaultHtmlOptions;
-				// take the user-specified value if provided, otherwise defer to presence/absence of configuration in cssOptions
-				htmlOptions.minifyCSS = options?.htmlOptions?.minifyCSS ?? cssOptions;
-				const minifier = new CleanCSS(cssOptions);
+				const buildExtensions = options?.includeExtension ? options.includeExtension.concat(extensionsToBuild) : extensionsToBuild;
+				const htmlOptions = options?.minifyOptions ?? defaultMinifyOptions;
+				const cssMinifier = getCSSMinifier(build.config, htmlOptions);
+				const jsMinifier = getJSMinifier(build.config, htmlOptions);
 
 				for (const file of files) {
 					const extension = path.extname(file.path);
@@ -126,18 +175,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 					switch (path.extname(file.path)) {
 						case '.css':
 							{
-								let content = await file.file.text();
-								if (build.config.minify) {
-									const output = minifier.minify(content);
-									if (output.warnings.length > 0) {
-										console.warn("Finished minifying", file.path, "with warnings:", output.warnings);
-									}
-									if (output.errors.length > 0) {
-										console.error("Finished minifying", file.path, "with errors:", output.errors);
-										continue;
-									}
-									content = output.styles;
-								}
+								const content = await file.file.text().then(cssMinifier);
 
 								if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
 									const element = findElementFromAttibute(document, file.attribute);
@@ -157,7 +195,6 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							{
 								const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
 								fs.mkdirSync(path.dirname(finalDest), { recursive: true });
-
 								const fileContents = build.config.minify ? await minify(document.toString(), htmlOptions) : document.toString();
 
 								Bun.write(finalDest, fileContents);
@@ -167,13 +204,13 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							if (buildExtensions.includes(extension)) {
 								const response = await Bun.build({
 									entrypoints: [file.path],
-									minify: build.config.minify,
+									minify: build.config.minify && (htmlOptions.minifyJS === true || htmlOptions.minifyJS === undefined),
 									sourcemap: build.config.sourcemap,
 									outdir: path.resolve(process.cwd(), build.config.outdir!),
 									root: commonPath,
 									naming: '[dir]/[name].[ext]',
 									plugins: options?.plugins,
-								});
+								}).then(jsMinifier);
 
 								const element = findElementFromAttibute(document, file.attribute);
 

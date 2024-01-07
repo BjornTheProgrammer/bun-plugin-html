@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import html, { defaultCssOptions, defaultHtmlOptions } from "../src/index";
+import html, { defaultMinifyOptions } from "../src/index";
 import { expect, test, describe } from "bun:test";
 import { sleep, sleepSync } from "bun";
 import { emptyDir, testIfFileExists } from './utils';
@@ -15,12 +15,16 @@ describe("Testing Generation of Minified HTML", async () => {
 		outdir: generationDirectory,
 		minify: true,
 		plugins: [html({
-			cssOptions: { ...defaultCssOptions, format: { semicolonAfterLastProperty: true } },
-			htmlOptions: { ...defaultHtmlOptions, removeStyleLinkTypeAttributes: true }
+			minifyOptions: {
+				...defaultMinifyOptions,
+				removeStyleLinkTypeAttributes: true,
+				minifyCSS: { format: 'beautify' },
+				minifyJS: { format: { beautify: true } }
+			}
 		})],
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
-	testIfFileExists(generationDirectory, expectedDirectory, 'images/favicon.ico');
+	testIfFileExists(generationDirectory, expectedDirectory, 'main.css');
 });
 

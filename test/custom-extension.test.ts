@@ -34,7 +34,7 @@ describe("Testing Generation of HTML", async () => {
   await Bun.build({
     entrypoints: ['./test/starting/index.html'],
     outdir: generationDirectory,
-    plugins: [squintLoader, html({ build: ['.cljs'], filter: ['.css', '.ico', '.tsx'], plugins: [squintLoader] })],
+    plugins: [squintLoader, html({ includeExtension: ['.cljs'], filter: ['.css', '.ico', '.tsx'], plugins: [squintLoader] })],
   })
 
   testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
