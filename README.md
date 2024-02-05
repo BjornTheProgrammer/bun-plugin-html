@@ -110,7 +110,10 @@ type BunPluginHTMLOptions = {
     css?: boolean;
     js?: boolean;
   };
-  filter?: string[];
+  minify?: Options;
+  includeExtensions?: string[];
+  excludeExtensions?: string[];
+  excludeSelectors?: string[];
 };
 ```
 
@@ -147,12 +150,66 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
 </body>
 ```
 
-### Filter Option
+### MinifyOptions Option
 
-The `filter` option takes an array of strings. Any files whose extensions match any of those strings will be ignored by
+Use `minifyOptions` to configure [`html-minifier-terser`](https://github.com/terser/html-minifier-terser?tab=readme-ov-file#options-quick-reference). 
+
+The `minifyCSS` and `minifyJS` fields enable further configuration of 
+[`clean-css`](https://github.com/clean-css/clean-css?tab=readme-ov-file#constructor-options) and 
+[`terser`](https://github.com/terser/terser?tab=readme-ov-file#minify-options), respectively.
+
+The following default options are exported as `defaultMinifyOptions`:
+```
+{
+	collapseWhitespace: true,
+	collapseInlineTagWhitespace: true,
+	caseSensitive: true,
+	minifyCSS: {},
+	minifyJS: true,
+	removeComments: true,
+	removeRedundantAttributes: true,
+}
+```
+
+`minifyCSS` and `minifyJS` can both be set to either `true`, `false`, a configuration object, or a callback function. The different 
+values of `minifyCSS` and `minifyJS` behave as follows:
+
+#### MinifyCSS
+
+| Value                                      | Result                      |
+|--------------------------------------------|-----------------------------|
+| `false`                                    | CSS minification is skipped |
+| `true` or `undefined`                      | CSS minification is performed with default options using `clean-css` |
+| `{ opts } `                                | CSS minification is performed with the provided options using `clean-css` |
+| `((text: string, type: string) => string)` | Your function is called for every CSS element encountered and should return minified content. |
+
+
+#### MinifyJS
+
+| Value                                        | Result                      |
+|----------------------------------------------|-----------------------------|
+| `false`                                      | JS minification is skipped |
+| `true` or `undefined`                        | JS minification is performed by `Bun.build` and inlined scripts will also be processed with default options using `terser` |
+| `{ opts } `                                  | JS minification is performed with the provided options using `terser`. No minification is performed by `Bun.build` |
+| `((text: string, inline: boolean) => string)`| Your function is called for every JS element encoutered and should return minified content. |
+
+### IncludeExtensions Option
+
+The `includeExtensions` option takes an array of strings. Any files whose extensions match any of those strings will be passed to 
+`Bun.build` (in addition to `['.js', '.jsx', '.ts', '.tsx']`).
+
+**Note: you must ensure an appropriate plugin is included for each file extension.**
+
+### ExcludeExtensions Option
+
+The `excludeExtensions` option takes an array of strings. Any files whose extensions match any of those strings will be ignored by
 the plugin.
 
 The extension name follows the same format as the [path.extname](https://nodejs.org/api/path.html#pathextnamepath) return.
+
+### ExcludeSelectors Option
+
+The `excludeSelectors` option takes an array of strings. Any HTML elements matched by a selector will be ignored by the plugin.
 
 ### Plugins Option
 
