@@ -19,6 +19,6 @@ describe("Testing Generation of HTML", async () => {
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
 	testIfFileExists(generationDirectory, expectedDirectory, 'main.js');
 
-    testFileDoesntExist(generationDirectory, 'main.css');
-    testFileDoesntExist(generationDirectory, 'images/favicon.ico');
+	testFileDoesntExist(generationDirectory, 'main.css');
+	testFileDoesntExist(generationDirectory, 'images/favicon.ico');
 });

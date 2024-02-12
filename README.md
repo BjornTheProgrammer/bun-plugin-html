@@ -35,17 +35,17 @@ Here is an example of an HTML file (`index.html`) that serves as an input:
 ```html
 <!DOCTYPE html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" href="main.css">
-	<link rel="icon" type="image/x-icon" href="./images/favicon.ico">
-	<title>Hello World!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+    <title>Hello World!</title>
 </head>
 <body>
-	<h1>Hello World</h1>
-	<p id="js-target">This should be changed by JS</p>
-	<script src="main.ts"></script>
-	<script src="./js/secondary.ts"></script>
+    <h1>Hello World</h1>
+    <p id="js-target">This should be changed by JS</p>
+    <script src="main.ts"></script>
+    <script src="./js/secondary.ts"></script>
 </body>
 ```
 
@@ -86,17 +86,17 @@ Here's the transformed HTML file in the output directory (`dist/index.html`):
 ```html
 <!DOCTYPE html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" href="main.css">
-	<link rel="icon" type="image/x-icon" href="./images/favicon.ico">
-	<title>Hello World!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+    <title>Hello World!</title>
 </head>
 <body>
-	<h1>Hello World</h1>
-	<p id="js-target">This should be changed by JS</p>
-	<script src="main.js"></script>
-	<script src="./js/secondary.js"></script>
+    <h1>Hello World</h1>
+    <p id="js-target">This should be changed by JS</p>
+    <script src="main.js"></script>
+    <script src="./js/secondary.js"></script>
 </body>
 ```
 
@@ -110,10 +110,11 @@ type BunPluginHTMLOptions = {
     css?: boolean;
     js?: boolean;
   };
-  minify?: Options;
+  minify?: HTMLTerserOptions;
   includeExtensions?: string[];
   excludeExtensions?: string[];
   excludeSelectors?: string[];
+  plugins?: BunPlugin[];
 };
 ```
 
@@ -124,29 +125,29 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
 ```html
 <!DOCTYPE html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<style>
-    body {
-      background-color: #000;
-      color: #fff;
-    }
-  </style>
-	<link rel="icon" type="image/x-icon" href="./images/favicon.ico">
-	<title>Hello World!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+    <title>Hello World!</title>
 </head>
 <body>
-	<h1>Hello World</h1>
-	<p id="js-target">This should be changed by JS</p>
-	<script>
-    // Content of main.ts
-    console.log("Running JS for browser");
-    document.querySelector("#js-target").innerHTML = "Changed!";
-  </script>
-	<script>
-    // Content of js/secondary.ts
-    console.log("in secondary.ts");
-  </script>
+    <h1>Hello World</h1>
+    <p id="js-target">This should be changed by JS</p>
+    <script>
+        // Content of main.ts
+        console.log("Running JS for browser");
+        document.querySelector("#js-target").innerHTML = "Changed!";
+    </script>
+    <script>
+        // Content of js/secondary.ts
+        console.log("in secondary.ts");
+    </script>
 </body>
 ```
 
@@ -159,15 +160,15 @@ The `minifyCSS` and `minifyJS` fields enable further configuration of
 [`terser`](https://github.com/terser/terser?tab=readme-ov-file#minify-options), respectively.
 
 The following default options are exported as `defaultMinifyOptions`:
-```
+```ts
 {
-	collapseWhitespace: true,
-	collapseInlineTagWhitespace: true,
-	caseSensitive: true,
-	minifyCSS: {},
-	minifyJS: true,
-	removeComments: true,
-	removeRedundantAttributes: true,
+    collapseWhitespace: true,
+    collapseInlineTagWhitespace: true,
+    caseSensitive: true,
+    minifyCSS: {},
+    minifyJS: true,
+    removeComments: true,
+    removeRedundantAttributes: true,
 }
 ```
 

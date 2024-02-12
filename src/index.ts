@@ -7,8 +7,8 @@ import { BunFile, BunPlugin, BuildConfig, BuildOutput } from 'bun';
 
 import { parseHTML } from 'linkedom';
 import { beforeAll } from 'bun:test';
-import { minify, Options } from 'html-minifier-terser';
-import CleanCSS, { OptionsOutput } from 'clean-css';
+import { minify, Options as HTMLTerserOptions } from 'html-minifier-terser';
+import CleanCSS, { OptionsOutput as CleanCssOptions } from 'clean-css';
 import { changeFileExtension, cleanupEmptyFolders, findElementFromAttibute, findLastCommonPath, getColumnNumber, getLines, isURL, removeCommonPath, returnLineNumberOfOccurance } from './utils';
 import { minify as terser, MinifyOptions } from 'terser';
 
@@ -17,17 +17,17 @@ export type BunPluginHTMLOptions = {
 		css?: boolean;
 		js?: boolean;
 	};
-	minifyOptions?: Options;
-	includeExtension?: string[];
+	minifyOptions?: HTMLTerserOptions;
+	includeExtensions?: string[];
+	excludeExtensions?: string[];
 	excludeSelectors?: string[];
-	filter?: string[];
 	plugins?: BunPlugin[];
 }
 
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
 const extensionsToBuild: readonly string[] = ['.js', '.jsx', '.ts', '.tsx'] as const;
 const selectorsToExclude: readonly string[] = ['a'] as const;
-export const defaultMinifyOptions: Options = {
+export const defaultMinifyOptions: HTMLTerserOptions = {
 	collapseWhitespace: true,
 	collapseInlineTagWhitespace: true,
 	caseSensitive: true,
@@ -87,12 +87,12 @@ async function getAllFiles(document: Document, entrypoint: string, selector: str
 	return files;
 }
 
-function getCSSMinifier(config: BuildConfig, options: Options): (text: string) => string {
+function getCSSMinifier(config: BuildConfig, options: HTMLTerserOptions): (text: string) => string {
 	if (config.minify && options.minifyCSS !== false) {
 		if (typeof options.minifyCSS === 'function') {
 			return options.minifyCSS as (text: string) => string;
 		} else {
-			const cssOptions = typeof options.minifyCSS === 'object' ? options.minifyCSS as OptionsOutput : {};
+			const cssOptions = typeof options.minifyCSS === 'object' ? options.minifyCSS as CleanCssOptions : {};
 			const minifier = new CleanCSS(cssOptions);
 
 			return (text: string) => {
@@ -109,7 +109,8 @@ function getCSSMinifier(config: BuildConfig, options: Options): (text: string) =
 		return (text: string) => text;
 	}
 }
-function getJSMinifier(config: BuildConfig, options: Options): (result: BuildOutput) => Promise<BuildOutput> {
+
+function getJSMinifier(config: BuildConfig, options: HTMLTerserOptions): (result: BuildOutput) => Promise<BuildOutput> {
 	const noop = async (result: BuildOutput) => result;
 	if (config.minify) {
 		return async (result: BuildOutput) => {
@@ -163,14 +164,14 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 
 				const paths = files.map(file => file.path);
 				const commonPath = findLastCommonPath(paths);
-				const buildExtensions = options?.includeExtension ? options.includeExtension.concat(extensionsToBuild) : extensionsToBuild;
+				const buildExtensions = options?.includeExtensions ? options.includeExtensions.concat(extensionsToBuild) : extensionsToBuild;
 				const htmlOptions = options?.minifyOptions ?? defaultMinifyOptions;
 				const cssMinifier = getCSSMinifier(build.config, htmlOptions);
 				const jsMinifier = getJSMinifier(build.config, htmlOptions);
 
 				for (const file of files) {
 					const extension = path.extname(file.path);
-					if (options?.filter?.includes(extension)) continue;
+					if (options?.excludeExtensions?.includes(extension)) continue;
 
 					switch (path.extname(file.path)) {
 						case '.css':
