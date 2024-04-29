@@ -16,6 +16,7 @@ export type BunPluginHTMLOptions = {
 	inline?: boolean | {
 		css?: boolean;
 		js?: boolean;
+		html?: boolean;
 	};
 	minifyOptions?: HTMLTerserOptions;
 	includeExtensions?: string[];
@@ -178,7 +179,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							{
 								const content = await file.file.text().then(cssMinifier);
 
-								if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
+								if (file.file !== entrypointFile && options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
 									const element = findElementFromAttibute(document, file.attribute);
 									const styleTag = document.createElement('style');
 									styleTag.innerHTML = content;
@@ -194,11 +195,21 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 						case '.html':
 						case '.htm':
 							{
-								const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
-								fs.mkdirSync(path.dirname(finalDest), { recursive: true });
-								const fileContents = build.config.minify ? await minify(document.toString(), htmlOptions) : document.toString();
-
-								Bun.write(finalDest, fileContents);
+								const content = await file.file.text();
+								const isEntryPoint = path.relative(file.path, entrypoint).length === 0;
+								if (!isEntryPoint && options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.html === true))) {
+									const element = findElementFromAttibute(document, file.attribute);
+									const htmlContentHolder = document.createElement('span');
+									htmlContentHolder.innerHTML = content;
+									element?.insertAdjacentElement('afterend', htmlContentHolder);
+									element?.remove();
+								} else {
+									const finalDest = path.resolve(process.cwd(), build.config.outdir!, removeCommonPath(file.path, commonPath));
+									fs.mkdirSync(path.dirname(finalDest), { recursive: true });
+									const fileContents = build.config.minify ? await minify(document.toString(), htmlOptions) : document.toString();
+	
+									Bun.write(finalDest, fileContents);
+								}
 							}
 							break;
 						default:

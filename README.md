@@ -109,6 +109,7 @@ type BunPluginHTMLOptions = {
   inline?: boolean | {
     css?: boolean;
     js?: boolean;
+    html?: boolean;
   };
   minify?: HTMLTerserOptions;
   includeExtensions?: string[];
@@ -120,7 +121,7 @@ type BunPluginHTMLOptions = {
 
 ### Inline Option
 
-By setting the `inline` option to `true`, you can choose to inline CSS and/or JS files within your HTML. Here's an example:
+By setting the `inline` option to `true`, you can choose to inline CSS, JS and/or HTML files within your HTML. Here's an example:
 
 ```html
 <!DOCTYPE html>
@@ -134,6 +135,7 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
         }
     </style>
     <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+    <link rel="import" href="./html/component-template.html" >
     <title>Hello World!</title>
 </head>
 <body>
