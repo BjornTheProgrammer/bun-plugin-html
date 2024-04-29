@@ -16,7 +16,6 @@ export type BunPluginHTMLOptions = {
 	inline?: boolean | {
 		css?: boolean;
 		js?: boolean;
-		html?: boolean;
 	};
 	minifyOptions?: HTMLTerserOptions;
 	includeExtensions?: string[];
@@ -196,8 +195,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 						case '.htm':
 							{
 								const content = await file.file.text();
+
 								const isEntryPoint = path.relative(file.path, entrypoint).length === 0;
-								if (!isEntryPoint && options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.html === true))) {
+								if (!isEntryPoint) {
 									const element = findElementFromAttibute(document, file.attribute);
 									const htmlContentHolder = document.createElement('span');
 									htmlContentHolder.innerHTML = content;

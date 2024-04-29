@@ -39,6 +39,7 @@ Here is an example of an HTML file (`index.html`) that serves as an input:
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+    <link rel="import" href="./html/component-template.html" >
     <title>Hello World!</title>
 </head>
 <body>
@@ -59,8 +60,10 @@ Along with a file structure like the one below, the plugin generates the output 
     ├── main.ts
     ├── js/
     │   └── secondary.ts
-    └── images/
-        └── favicon.ico
+    ├── images/
+    │   └── favicon.ico
+    └── html/
+        └── component-template.html
 ```
 
 ### Output
@@ -90,6 +93,14 @@ Here's the transformed HTML file in the output directory (`dist/index.html`):
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+	<span><template>
+    <style>
+    .main {
+        background-color: red;
+    }
+    </style>
+    <div>template content</div>
+    </template></span>
     <title>Hello World!</title>
 </head>
 <body>
@@ -109,7 +120,6 @@ type BunPluginHTMLOptions = {
   inline?: boolean | {
     css?: boolean;
     js?: boolean;
-    html?: boolean;
   };
   minify?: HTMLTerserOptions;
   includeExtensions?: string[];
@@ -121,7 +131,7 @@ type BunPluginHTMLOptions = {
 
 ### Inline Option
 
-By setting the `inline` option to `true`, you can choose to inline CSS, JS and/or HTML files within your HTML. Here's an example:
+By setting the `inline` option to `true`, you can choose to inline CSS and/or JS files within your HTML. HTML imports are always inlined by default. Here's an example:
 
 ```html
 <!DOCTYPE html>
