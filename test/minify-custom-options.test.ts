@@ -4,7 +4,7 @@ import { expect, test, describe } from "bun:test";
 import { sleep, sleepSync } from "bun";
 import { emptyDir, testIfFileExists } from './utils';
 
-describe("Testing Generation of Minified HTML", async () => {
+describe("Testing Generation of Minified HTML with Custom", async () => {
 	const generationDirectory = './test/generation/minify-custom-options';
 	const expectedDirectory = './test/expected/minify-custom-options';
 

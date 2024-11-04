@@ -4,7 +4,7 @@ import { expect, test, describe } from "bun:test";
 import { sleep, sleepSync } from "bun";
 import { emptyDir, testFileDoesntExist, testIfFileExists } from './utils';
 
-describe("Testing Generation of HTML", async () => {
+describe("Testing Generation of Exclude Selector", async () => {
 	const generationDirectory = './test/generation/exclude-selector';
 	const expectedDirectory = './test/expected/exclude-selector';
 

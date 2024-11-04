@@ -26,7 +26,7 @@ export const squintLoader = {
 	},
 };
 
-describe("Testing Generation of HTML", async () => {
+describe("Testing Generation of Custom Extension", async () => {
 	const generationDirectory = './test/generation/custom-extension';
 	const expectedDirectory = './test/expected/custom-extension';
 

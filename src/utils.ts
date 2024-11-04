@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path';
-import { File } from '.';
+import { File, FileDetails } from '.';
 
 export function isURL(link: string) {
 	try {
@@ -25,8 +25,12 @@ export function getColumnNumber(file: string, index: number) {
 }
 
 export function getLines(file: string, amount: number, end: number) {
+	const maxdigits = end.toString().length;
 	const start = end - amount < 0 ? 0 : end - amount;
-	return file.split('\n').slice(start, end).map((l, i) => l = `${i + start + 1}:${l}`).join('\n');
+	return file.split('\n').slice(start, end).map((l, i) => {
+		const lineNumber = `${i + start + 1}`.padStart(maxdigits);
+		return `${lineNumber}:${l}`
+	}).join('\n');
 }
 
 export function changeFileExtension(filePath: string, newExtension: string) {
@@ -78,6 +82,6 @@ export function removeCommonPath(filePath: string, commonPath: string) {
 	return normalizedPath.substring(commonPath.length + (commonPath.length > 0 ? path.sep.length : 0));
 }
 
-export function findElementFromAttibute(document: Document, attribute: File['attribute']) {
-	return document.querySelector(`[${attribute.name}="${attribute.value}"]`);
+export function attributeToSelector(attribute: Exclude<FileDetails["attribute"], undefined>) {
+	return `*[${attribute.name}="${attribute.value}"]`
 }
