@@ -14,6 +14,7 @@ describe("Testing Generation of Exclude Extension", async () => {
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
 		plugins: [html({excludeExtensions: ['.css', '.ico', '.tsx']})],
+		naming: '[dir]/[name].[ext]'
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

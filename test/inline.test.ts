@@ -14,6 +14,7 @@ describe("Testing Generation of Inlined HTML", async () => {
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
 		plugins: [html({ inline: true })],
+		naming: '[dir]/[name].[ext]',
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

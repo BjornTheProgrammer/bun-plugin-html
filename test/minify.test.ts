@@ -15,6 +15,7 @@ describe("Testing Generation of Minified HTML", async () => {
 		outdir: generationDirectory,
 		minify: true,
 		plugins: [html()],
+		naming: '[dir]/[name].[ext]',
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

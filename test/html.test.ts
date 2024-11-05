@@ -14,6 +14,7 @@ describe("Testing Generation of HTML", async () => {
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
 		plugins: [html()],
+		naming: '[dir]/[name].[ext]',
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

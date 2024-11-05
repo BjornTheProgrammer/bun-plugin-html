@@ -10,6 +10,8 @@ You can install `bun-plugin-html` using the following command:
 bun add -d bun-plugin-html
 ```
 
+Ensure Bun is upgraded to `v1.1.34`, as a bug fix was introduced in this version of Bun.
+
 ## Usage
 
 To use this plugin, import it into your code and add it to the list of plugins when building your project with Bun. Here's an example:
@@ -18,11 +20,11 @@ To use this plugin, import it into your code and add it to the list of plugins w
 import html from 'bun-plugin-html';
 
 await Bun.build({
-  entrypoints: ['./src/index.html', './src/other.html'],
-  outdir: './dist',  // Specify the output directory
-  plugins: [
-    html()
-  ],
+    entrypoints: ['./src/index.html', './src/other.html'],
+    outdir: './dist',  // Specify the output directory
+    plugins: [
+        html()
+    ],
 });
 ```
 
@@ -106,15 +108,17 @@ You can customize the behavior of the `bun-plugin-html` by providing options. He
 
 ```typescript
 type BunPluginHTMLOptions = {
-  inline?: boolean | {
-    css?: boolean;
-    js?: boolean;
-  };
-  minify?: HTMLTerserOptions;
-  includeExtensions?: string[];
-  excludeExtensions?: string[];
-  excludeSelectors?: string[];
-  plugins?: BunPlugin[];
+    inline?: boolean | {
+        css?: boolean;
+        js?: boolean;
+    };
+    naming?: {
+        css?: string;
+    };
+    minifyOptions?: HTMLTerserOptions;
+    includeExtensions?: string[];
+    excludeExtensions?: string[];
+    excludeSelectors?: string[];
 };
 ```
 
@@ -212,9 +216,27 @@ The extension name follows the same format as the [path.extname](https://nodejs.
 
 The `excludeSelectors` option takes an array of strings. Any HTML elements matched by a selector will be ignored by the plugin.
 
-### Plugins Option
+### Naming Option
 
-The `plugins` option takes an array of `BunPlugin`s. These plugins will be used when transpiling Java/Typescript files.
+The `naming` option takes in an optional template to name css files with. By default css files follow the `chunk` naming [rules](https://bun.sh/docs/bundler#naming). This overrides that default behavior, following the same syntax.
+
+The example below shows spliting the js, assets, and css into different directories.
+```ts
+await Bun.build({
+    entrypoints: ['index.html'],
+    outdir: 'dist',
+    naming: {
+        chunk: 'js/[dir]/[name]-[hash].[ext]',
+        asset: 'assets/[name].[ext]',
+        entry: 'main.html'
+    },
+    plugins: [html({
+        naming: {
+            css: 'css/[name].[ext]'
+        }
+    })],
+})
+```
 
 ## License
 

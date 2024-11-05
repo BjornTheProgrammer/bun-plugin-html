@@ -1,10 +1,9 @@
 import fs from 'node:fs';
 import html from "../src/index";
-import { expect, test, describe } from "bun:test";
+import { describe } from "bun:test";
 import { PluginBuilder } from "bun";
 import { emptyDir, testFileDoesntExist, testIfFileExists } from './utils';
 
-import { plugin } from "bun";
 import "squint-cljs"; // somehow I needed to pre-require this;
 export const squintLoader = {
 	name: "squint loader",
@@ -36,7 +35,9 @@ describe("Testing Generation of Custom Extension", async () => {
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
 		plugins: [squintLoader, html({
-			includeExtensions: ['.cljs'], excludeExtensions: ['.css', '.ico', '.tsx'], plugins: [squintLoader] })],
+			includeExtensions: ['.cljs'], excludeExtensions: ['.css', '.ico', '.tsx']
+		})],
+		naming: '[dir]/[name].[ext]'
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

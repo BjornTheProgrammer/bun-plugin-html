@@ -1,6 +1,16 @@
-import fs from 'fs'
+import { BuildArtifact } from 'bun';
 import path from 'path';
-import { File, FileDetails } from '.';
+
+export type FileDetails = {
+	attribute?: {
+		name: string,
+		value: string
+	}
+	content?: Blob | NodeJS.TypedArray | ArrayBufferLike | string | Bun.BlobPart[],
+	kind: BuildArtifact["kind"],
+	hash: string,
+	originalPath: string | false,
+}
 
 export function isURL(link: string) {
 	try {
@@ -35,24 +45,6 @@ export function getLines(file: string, amount: number, end: number) {
 
 export function changeFileExtension(filePath: string, newExtension: string) {
 	return path.format({ ...path.parse(filePath), base: '', ext: newExtension })
-}
-
-/**
- * Taken from arnoson
- * https://gist.github.com/arnoson/3237697e8c61dfaf0356f814b1500d7b
- * */
-export const cleanupEmptyFolders = (folder: string) => {
-	if (!fs.statSync(folder).isDirectory()) return
-	let files = fs.readdirSync(folder)
-
-	if (files.length > 0) {
-		files.forEach((file) => cleanupEmptyFolders(path.join(folder, file)))
-		files = fs.readdirSync(folder)
-	}
-
-	if (files.length == 0) {
-		fs.rmdirSync(folder)
-	}
 }
 
 export function findLastCommonPath(paths: string[]) {

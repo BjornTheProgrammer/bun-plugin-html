@@ -22,6 +22,7 @@ describe("Testing Generation of Minified HTML with Custom", async () => {
 				minifyJS: { format: { beautify: true } }
 			}
 		})],
+		naming: '[dir]/[name].[ext]',
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');

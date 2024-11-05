@@ -15,6 +15,7 @@ describe("Testing Generation of Inlined Minified HTML", async () => {
 		minify: true,
 		outdir: generationDirectory,
 		plugins: [html({ inline: true })],
+		naming: '[dir]/[name].[ext]',
 	})
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
