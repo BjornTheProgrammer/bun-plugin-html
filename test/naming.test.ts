@@ -28,7 +28,7 @@ describe("Testing Using Custom Name", async () => {
 	testIfFileExists(generationDirectory, expectedDirectory, 'main.html');
 	testIfFileExists(generationDirectory, expectedDirectory, 'css/main-1234.css');
 	testIfFileExists(generationDirectory, expectedDirectory, 'chunks/main-xb0qxkma.js');
-	testIfFileExists(generationDirectory, expectedDirectory, 'chunks/js/secondary-1h16109t.js');
+	testIfFileExists(generationDirectory, expectedDirectory, 'chunks/js/secondary-q6ncjjmh.js');
 	testIfFileExists(generationDirectory, expectedDirectory, 'assets/build-custom.cljs');
 	testIfFileExists(generationDirectory, expectedDirectory, 'assets/favicon.ico');
 	testIfFileExists(generationDirectory, expectedDirectory, 'assets/shubham-dhage-unsplash.jpg');

@@ -2,11 +2,17 @@
 /// <reference lib="dom.iterable" />
 
 import path from 'path';
-import { BunFile, BunPlugin, BuildConfig, PluginBuilder, BuildArtifact } from 'bun';
+import { BunFile, BunPlugin, BuildConfig, PluginBuilder, BuildArtifact, file } from 'bun';
 import { minify, Options as HTMLTerserOptions } from 'html-minifier-terser';
 import CleanCSS, { OptionsOutput as CleanCssOptions } from 'clean-css';
-import { FileDetails, attributeToSelector, changeFileExtension, findLastCommonPath, getColumnNumber, getLines, isURL, removeCommonPath, returnLineNumberOfOccurance } from './utils';
+import { FileDetails, Processor, attributeToSelector, changeFileExtension, contentToString, findLastCommonPath, getColumnNumber, getLines, isURL, removeCommonPath, returnLineNumberOfOccurance } from './utils';
 import { minify as terser, MinifyOptions } from 'terser';
+import os from 'os';
+import fs from 'fs/promises'
+
+export type File = {
+	file: BunFile, details: FileDetails
+}
 
 export type BunPluginHTMLOptions = {
 	inline?: boolean | {
@@ -20,6 +26,7 @@ export type BunPluginHTMLOptions = {
 	includeExtensions?: string[];
 	excludeExtensions?: string[];
 	excludeSelectors?: string[];
+	preprocessor?: (processor: Processor) => Promise<Processor> | Processor;
 }
 
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
@@ -39,7 +46,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 	const extension = path.parse(filePath).ext;
 	if (extension !== '.htm' && extension !== '.html') return [];
 
-	const files: {file: BunFile, details: FileDetails}[] = [];
+	const files: File[] = [];
 	const rewriter = new HTMLRewriter();
 
 	const resolvedPath = path.resolve(filePath);
@@ -114,7 +121,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 }
 
 function getExtensionFiles(files: Map<BunFile, FileDetails>, extensions: readonly string[]) {
-	const result: {file: BunFile, details: FileDetails}[] = [];
+	const result: File[] = [];
 	for (const [file, details] of files.entries()) {
 		const extension = path.parse(file.name!).ext;
 		if (!extensions.includes(extension)) continue;
@@ -152,7 +159,6 @@ function getJSMinifier(config: BuildConfig, options: HTMLTerserOptions): (text: 
 	const noop = async (text: string) => text;
 	if (config.minify) {
 		return async (text: string) => {
-			let content: string;
 			if (typeof options.minifyJS === 'function') {
 				return options.minifyJS(text, false);
 			} else if (typeof options.minifyJS === 'object') {
@@ -184,15 +190,75 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		naming.entry = './[name]-[hash].[ext]'
 	}
 
-	const entrypoints = jsFiles.map(item => item.file.name!);
+	let entrypoints = jsFiles.map(item => item.file.name!);
+	let commonPath = findLastCommonPath(entrypoints);
+
+	const requiresTempDir = jsFiles.some(file => file.details.content !== undefined);
+	let tempDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'bun-build-'));
+
+	if (requiresTempDir) {
+		// Write files with `content` to the temporary directory
+		await Promise.all(jsFiles.map(async (item, index) => {
+			const filePath = removeCommonPath(item.file.name!, commonPath);
+			const tempFilePath = path.resolve(tempDirPath!, filePath);
+			await Bun.write(tempFilePath, item.details.content ?? item.file);
+			entrypoints[index] = tempFilePath;
+		}));
+	}
+
+	const customResolver = (options: { pathToResolveFrom: string }): BunPlugin => {
+		return {
+			name: "Custom Resolver",
+			setup(build) {
+				build.onResolve({ filter: /[\s\S]*/ }, async (args) => {
+					try {
+						let resolved;
+						const tempPath = path.resolve(tempDirPath, args.path);
+						const originalPath = path.resolve(args.path, options.pathToResolveFrom);
+
+						// Check if the path is a module
+						const isModule = !args.path.startsWith('./') && !args.path.startsWith('../') && !args.path.startsWith('/');
+
+						if (await Bun.file(tempPath).exists()) {
+							resolved = Bun.resolveSync(args.path, tempDirPath);
+						} else if (isModule || await Bun.file(originalPath).exists()) {
+							resolved = Bun.resolveSync(args.path, options.pathToResolveFrom);
+						} else {
+							resolved = path.resolve(args.importer, '../', args.path);
+						}
+
+						return {
+							...args,
+							path: resolved,
+						};
+					} catch (error) {
+						console.error("Error during module resolution:");
+						console.error("Potential reasons:");
+						console.error("- Missing file in specified paths");
+						console.error("- Invalid file type (non-JS file)");
+						console.error("If unresolved, please report to `bun-plugin-html`.");
+						console.error(error);
+
+						// Return an empty path to prevent build failure
+						return {
+							...args,
+							path: '',
+						};
+					}
+				});
+			},
+		};
+	};
+
 	const result = await Bun.build({
 		...build.config,
 		entrypoints,
 		naming,
 		outdir: undefined,
+		plugins: [customResolver({
+			pathToResolveFrom: commonPath
+		}), ...build.config.plugins]
 	})
-
-	const commonPath = findLastCommonPath(entrypoints);
 
 	let index = 0;
 	for (const output of result.outputs) {
@@ -227,7 +293,8 @@ async function forStyleFiles(options: BunPluginHTMLOptions | undefined, build: P
 
 	for (const item of cssFiles) {
 		const file = item.file;
-		const content = await file.text().then(cssMinifier);
+		let content = contentToString(item.details.content) || file.text();
+		content = cssMinifier(await content);
 		files.set(file, {
 			content,
 			attribute: item.details.attribute,
@@ -253,9 +320,6 @@ async function processHtmlFiles(options: BunPluginHTMLOptions | undefined, build
 	
 	if (!htmlFiles) return toChangeAttributes;
 
-	const keys = mapIntoKeys(files);
-	const commonPath = findLastCommonPath(keys);
-
 	for (const htmlFile of htmlFiles) {
 		for (const [file, details] of files) {
 			const attribute = details.attribute;
@@ -270,7 +334,7 @@ async function processHtmlFiles(options: BunPluginHTMLOptions | undefined, build
 						toChangeAttributes.push((rewriter: HTMLRewriter) => {
 							rewriter.on(selector, {
 								async element(el) {
-									const content = details.content ?? await file.text();
+									const content = await contentToString(details.content) || await file.text();
 									el.replace(`<style>${content}</style>`, {
 										html: true
 									})
@@ -285,7 +349,7 @@ async function processHtmlFiles(options: BunPluginHTMLOptions | undefined, build
 						toChangeAttributes.push((rewriter: HTMLRewriter) => {
 							rewriter.on(selector, {
 								async element(el) {
-									let content = details.content ? details.content.toString() : await file.text();
+									let content = await contentToString(details.content) || await file.text();
 									content = content.replaceAll(/(<)(\/script>)/g, '\\x3C$2');
 
 									el.removeAttribute('src');
@@ -361,8 +425,13 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			const buildExtensions = options?.includeExtensions ? options.includeExtensions.concat(extensionsToBuild) : extensionsToBuild;
 
 			const filesPromises = await Promise.all(build.config.entrypoints.map(entrypoint => getAllFiles(options, entrypoint, excluded)));
-			const files: Map<BunFile, FileDetails> = new Map(filesPromises.flat().map(item => [item.file, item.details]));
+			let files: Map<BunFile, FileDetails> = new Map(filesPromises.flat().map(item => [item.file, item.details]));
 			if (!files.size) return;
+
+			if (options?.preprocessor) {
+				const result = await options.preprocessor(new Processor(files));
+				files = result.export();
+			}
 
 			await forJsFiles(options, build, files, buildExtensions);
 			await forStyleFiles(options, build, htmlOptions, files)
@@ -427,7 +496,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			}
 
 			for (const [file, details] of newFiles.filter(([file, details]) => details.kind == 'entry-point')) {
-				let fileContents = await (details.content as Blob).text();
+				let fileContents = await contentToString(details.content);
 				const rewriter = new HTMLRewriter();
 				attributesToChange.forEach(item => item(rewriter));
 				fileContents = rewriter.transform(fileContents);
