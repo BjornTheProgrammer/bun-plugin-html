@@ -238,6 +238,35 @@ await Bun.build({
 })
 ```
 
+### Preprocessor Option
+
+The `preprocessor` option takes in a funciton which will be provided a `Processor` class, in which you can modify the files provided to it, before they are processed by `bun-plugin-html`.
+
+The example below shows processing the css files with tailwind.
+```ts
+await Bun.build({
+    entrypoints: ['src/index.html'],
+    outdir: 'dist',
+    minify: true,
+    plugins: [html({
+        async preprocessor(processor) {
+            const files = processor.getFiles();
+
+            for (const file of files) {
+                if (file.extension == '.css') {
+                    const contents = await $`bun run tailwindcss -i ${file.path} --content 'src/**/*.{html,js,ts}'`.quiet().text();
+                    processor.writeFile(file.path, contents);
+                }
+            }
+
+            // Add hello.txt to the out dir.
+            // The path provided to writeFile must be an absolute path.
+            processor.writeFile(path.resolve('src/hello.txt'), 'Hello World!')
+        },
+    })]
+})
+```
+
 ## License
 
 This plugin is licensed under MIT.

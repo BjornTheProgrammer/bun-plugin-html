@@ -49,7 +49,6 @@ describe("Testing Tailwind Preprocessor", async () => {
 				}
 
 				processor.writeFile(path.resolve(startingDirectory, 'hello.txt'), 'Hello World!')
-			    return processor;
 			},
 		})],
 		naming: '[dir]/[name].[ext]',

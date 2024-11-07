@@ -15,18 +15,43 @@ export type File = {
 }
 
 export type BunPluginHTMLOptions = {
+	/**
+	 * Whether to inline all files or not. Additionally, you can choose whether to inline just 
+	 * css and js files.
+	 */
 	inline?: boolean | {
 		css?: boolean;
 		js?: boolean;
 	};
+	/**
+	 * `bun-plugin-html`` already respects the default naming rules of Bun.build, but if you wish to override
+	 * that behavior for the naming of css files, then you can do so here.
+	 */
 	naming?: {
 		css?: string,
 	};
+	/**
+	 * Choose how the content is minified, if `Bun.build({ minify: true })` is set.
+	 */
 	minifyOptions?: HTMLTerserOptions;
+	/**
+	 * Choose what extensions to include in building of javascript files with `Bun.build`. 
+	 * 
+	 * Defaults are `.js`, `.jsx`, `.ts`, and `.tsx` files.
+	 */
 	includeExtensions?: string[];
+	/**
+	 * Choose which extensions to exclude from Bun.build processing.
+	 */
 	excludeExtensions?: string[];
+	/**
+	 * Choose which selectors to exclude. Only one is excluded by default, that being `a`
+	 */
 	excludeSelectors?: string[];
-	preprocessor?: (processor: Processor) => Promise<Processor> | Processor;
+	/**
+	 * Processes the files before they are processed by `bun-plugin-html`. Useful for things like tailwindcss.
+	 */
+	preprocessor?: (processor: Processor) => void | Promise<void>;
 }
 
 const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
@@ -429,8 +454,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			if (!files.size) return;
 
 			if (options?.preprocessor) {
-				const result = await options.preprocessor(new Processor(files));
-				files = result.export();
+				const processor = new Processor(files);
+				await options.preprocessor(processor);
+				files = processor.export();
 			}
 
 			await forJsFiles(options, build, files, buildExtensions);

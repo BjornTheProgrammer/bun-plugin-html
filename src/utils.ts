@@ -96,6 +96,9 @@ export class Processor {
 		}
 	}
 
+	/**
+	 * Get all the files, that can then be changed using writeFile.
+	 */
 	getFiles() {
 		const fileList: {
 			path: string,
@@ -115,6 +118,13 @@ export class Processor {
 		return fileList;
 	}
 
+	/**
+	 * Writes the specified file at filepath with the specified content.
+	 * 
+	 * If the path is the same as what the original file path was, then this will overwrite the content in that file.
+	 * 
+	 * If it isn't this creates a new file which will be outputted to the outdir. New files are treated as chunks.
+	 */
 	writeFile(filepath: string, content: string) {
 		if (!path.isAbsolute(filepath)) throw new Error('Path MUST be absolute');
 		if (this.#files.has(filepath)) {
@@ -133,7 +143,9 @@ export class Processor {
 		}
 	}
 
-	// This should only be called by the internals
+	/**
+	 * This should only be called by the internals
+	 */
 	export() {
 		const files: Map<BunFile, FileDetails> = new Map();
 
