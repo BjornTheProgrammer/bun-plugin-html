@@ -276,37 +276,42 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		};
 	};
 
-	const result = await Bun.build({
-		...build.config,
-		entrypoints,
-		naming,
-		outdir: undefined,
-		plugins: [customResolver({
-			pathToResolveFrom: commonPath
-		}), ...build.config.plugins]
-	})
+	for (const [index, entrypoint] of entrypoints.entries()) {
+		const result = await Bun.build({
+			...build.config,
+			entrypoints: [entrypoint],
+			naming,
+			outdir: undefined,
+			plugins: [customResolver({
+				pathToResolveFrom: commonPath
+			}), ...build.config.plugins],
+			root: build.config.root || commonPath
+		})
 
-	let index = 0;
-	for (const output of result.outputs) {
-		const outputText = await output.text();
-		const filePath = path.resolve(`${commonPath}/${output.path}`);
+		for (const output of result.outputs) {
+			const outputText = await output.text();
+			let filePath = path.resolve(`${commonPath}/${output.path}`);
+			if (filePath.includes(tempDirPath)) {
+				filePath = filePath.replace(`/private${tempDirPath}`, commonPath);
+				filePath = filePath.replace(tempDirPath, commonPath);
+			}
 
-		if (output.kind == 'entry-point') {
-			files.set(Bun.file(filePath), {
-				content: outputText,
-				attribute: jsFiles[index].details.attribute,
-				kind: jsFiles[index].details.kind,
-				hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
-				originalPath: jsFiles[index].details.originalPath
-			})
-			index++;
-		} else {
-			files.set(Bun.file(filePath), {
-				content: outputText,
-				kind: output.kind,
-				hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
-				originalPath: false
-			})
+			if (output.kind == 'entry-point') {
+				files.set(Bun.file(filePath), {
+					content: outputText,
+					attribute: jsFiles[index].details.attribute,
+					kind: jsFiles[index].details.kind,
+					hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
+					originalPath: jsFiles[index].details.originalPath
+				})
+			} else {
+				files.set(Bun.file(filePath), {
+					content: outputText,
+					kind: output.kind,
+					hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
+					originalPath: false
+				})
+			}
 		}
 	}
 }
