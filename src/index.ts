@@ -216,6 +216,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 	}
 
 	let entrypoints = jsFiles.map(item => item.file.name!);
+	if (!entrypoints) return;
 	let commonPath = findLastCommonPath(entrypoints);
 
 	const requiresTempDir = jsFiles.some(file => file.details.content !== undefined);
