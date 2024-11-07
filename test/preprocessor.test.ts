@@ -16,7 +16,6 @@ describe("Testing Tailwind Preprocessor", async () => {
 	await Bun.build({
 		entrypoints: [path.resolve(startingDirectory, 'index.html')],
 		outdir: generationDirectory,
-		minify: true,
 		plugins: [html({
 			async preprocessor(processor) {
 				const files = processor.getFiles();

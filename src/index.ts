@@ -133,7 +133,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 						name: attributeName,
 						value: attributeValue
 					},
-					hash: Bun.hash(await file.arrayBuffer(), 1).toString(16).slice(0, 8),
+					hash,
 					originalPath: resolvedPath
 				}
 			})

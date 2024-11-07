@@ -1,1 +1,25 @@
-var c=Object.create;var{getPrototypeOf:d,defineProperty:t,getOwnPropertyNames:s}=Object;var u=Object.prototype.hasOwnProperty;var a=(o,e,l)=>{l=o!=null?c(d(o)):{};let r=e||!o||!o.__esModule?t(l,"default",{value:o,enumerable:!0}):l;for(let n of s(o))if(!u.call(r,n))t(r,n,{get:()=>o[n],enumerable:!0});return r};var f=(o,e)=>()=>(e||o((e={exports:{}}).exports,e),e.exports);var g={hello:"world"};console.log(g);console.log("Running JS for browser");document.querySelector("#js-target").innerHTML="Changed!";
+var __create = Object.create;
+var __getProtoOf = Object.getPrototypeOf;
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __toESM = (mod, isNodeMode, target) => {
+  target = mod != null ? __create(__getProtoOf(mod)) : {};
+  const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
+  for (let key of __getOwnPropNames(mod))
+    if (!__hasOwnProp.call(to, key))
+      __defProp(to, key, {
+        get: () => mod[key],
+        enumerable: true
+      });
+  return to;
+};
+var __commonJS = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
+
+// /var/folders/xp/2h79jwp12nq0qc6hrr1lhlb00000gn/T/bun-build-22m6S8/js/third.js
+var third_default = { hello: "world" };
+
+// /var/folders/xp/2h79jwp12nq0qc6hrr1lhlb00000gn/T/bun-build-22m6S8/main.ts
+console.log(third_default);
+console.log("Running JS for browser");
+document.querySelector("#js-target").innerHTML = "Changed!";
