@@ -1,0 +1,22 @@
+{
+  "name": "bun-plugin-html-tailwind",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "autoprefixer": "^10.4.20",
+    "bun-html-live-reload": "^0.1.4",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "dev": "bun run --hot serve.ts",
+    "build": "bun run build.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "bun-plugin-html": "^2.1.4"
+  }
+}
