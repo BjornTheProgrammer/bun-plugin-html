@@ -121,7 +121,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 				console.log(getLines(fileText, 4, line + 1));
 				console.log('^'.padStart(columnNumber))
 				console.error(`HTMLParseError: Specified <${el.tagName}> ${attributeName} '${attributeValue}' does not exist!`)
-				console.log(`	  at ${filePath}:${line}:${columnNumber}`)
+				console.log(`		at ${filePath}:${line}:${columnNumber}`)
 				return;
 			}
 
@@ -276,65 +276,65 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		};
 	};
 
-  const result = await Bun.build({
-    ...build.config,
-    entrypoints: entrypoints,
-    naming,
-    outdir: undefined,
-    plugins: [customResolver({
-      pathToResolveFrom: commonPath
-    }), ...build.config.plugins],
-    root: build.config.root || commonPath
-  });
+	const result = await Bun.build({
+		...build.config,
+		entrypoints: entrypoints,
+		naming,
+		outdir: undefined,
+		plugins: [customResolver({
+			pathToResolveFrom: commonPath
+		}), ...build.config.plugins],
+		root: build.config.root || commonPath
+	});
 
-  const transpile = (flpath: string) => {
-    if (flpath.includes(tempDirPath)) {
-      let filePath = path.resolve(flpath);
-      filePath = filePath.replace(`/private${tempDirPath}`, commonPath);
-      filePath = filePath.replace(tempDirPath, commonPath);
-      return filePath;
-    }
-    return path.resolve(`${commonPath}/${flpath}`);
-  };
+	const transpile = (flpath: string) => {
+		if (flpath.includes(tempDirPath)) {
+			let filePath = path.resolve(flpath);
+			filePath = filePath.replace(`/private${tempDirPath}`, commonPath);
+			filePath = filePath.replace(tempDirPath, commonPath);
+			return filePath;
+		}
+		return path.resolve(`${commonPath}/${flpath}`);
+	};
 
 	for (const output of result.outputs) {
 		const outputText = await output.text();
-    const filePath = transpile(output.path);
+		const filePath = transpile(output.path);
 
 		if (output.kind == 'entry-point') {
-      let jsFile: File | undefined;
-      // TODO: temporary method to get relative jsFile of the output
-      let flpath = `${filePath.substring(commonPath.length + 1)
-            .replace(/^[.]+\/([.]+\/)?|(-[^.]{8})?\.[a-z]+$/g, '')}`;
-      while(true) {
-        if(entrypoints.find((entrypoint, i) => {
-          if (entrypoint.includes(tempDirPath)) {
-            entrypoint = transpile(entrypoint);
-          }
-          if (entrypoint.substring(commonPath.length + 1).replace(/\.[a-z]+$/, '') == flpath) {
-            jsFile = jsFiles[i];
-            return true;
-          }
-          return false;
-        }) || !flpath.includes("/")) break;
-        flpath = flpath.replace(/^[^/]+\//, "");
-      }
-      console.assert(jsFile, `no entrypoint matches ${flpath}`);
+			let jsFile: File | undefined;
+			// TODO: temporary method to get relative jsFile of the output
+			let flpath = `${filePath.substring(commonPath.length + 1)
+						.replace(/^[.]+\/([.]+\/)?|(-[^.]{8})?\.[a-z]+$/g, '')}`;
+			while(true) {
+				if(entrypoints.find((entrypoint, i) => {
+					if (entrypoint.includes(tempDirPath)) {
+						entrypoint = transpile(entrypoint);
+					}
+					if (entrypoint.substring(commonPath.length + 1).replace(/\.[a-z]+$/, '') == flpath) {
+						jsFile = jsFiles[i];
+						return true;
+					}
+					return false;
+				}) || !flpath.includes("/")) break;
+				flpath = flpath.replace(/^[^/]+\//, "");
+			}
+			console.assert(jsFile, `no entrypoint matches ${flpath}`);
 
-      jsFile && files.set(Bun.file(filePath), {
-        content: outputText,
-        attribute: jsFile.details.attribute,
-        kind: jsFile.details.kind,
-        hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
-        originalPath: jsFile.details.originalPath
-      });
+			jsFile && files.set(Bun.file(filePath), {
+				content: outputText,
+				attribute: jsFile.details.attribute,
+				kind: jsFile.details.kind,
+				hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
+				originalPath: jsFile.details.originalPath
+			});
 		} else {
-      files.set(Bun.file(filePath), {
-        content: outputText,
-        kind: output.kind,
-        hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
-        originalPath: false
-      });
+			files.set(Bun.file(filePath), {
+				content: outputText,
+				kind: output.kind,
+				hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
+				originalPath: false
+			});
 		}
 	}
 }
