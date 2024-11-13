@@ -16,7 +16,7 @@ export type File = {
 
 export type BunPluginHTMLOptions = {
 	/**
-	 * Whether to inline all files or not. Additionally, you can choose whether to inline just 
+	 * Whether to inline all files or not. Additionally, you can choose whether to inline just
 	 * css and js files.
 	 */
 	inline?: boolean | {
@@ -35,8 +35,8 @@ export type BunPluginHTMLOptions = {
 	 */
 	minifyOptions?: HTMLTerserOptions;
 	/**
-	 * Choose what extensions to include in building of javascript files with `Bun.build`. 
-	 * 
+	 * Choose what extensions to include in building of javascript files with `Bun.build`.
+	 *
 	 * Defaults are `.js`, `.jsx`, `.ts`, and `.tsx` files.
 	 */
 	includeExtensions?: string[];
@@ -124,7 +124,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 				console.log(`	  at ${filePath}:${line}:${columnNumber}`)
 				return;
 			}
-			
+
 			files.push({
 				file,
 				details: {
@@ -236,7 +236,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		return {
 			name: "Custom Resolver",
 			setup(build) {
-				build.onResolve({ filter: /[\s\S]*/ }, async (args) => {
+				build.onResolve({ filter: /.+/ }, async (args) => {
 					try {
 						let resolved;
 						const tempPath = path.resolve(tempDirPath, args.path);
@@ -276,42 +276,65 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		};
 	};
 
-	for (const [index, entrypoint] of entrypoints.entries()) {
-		const result = await Bun.build({
-			...build.config,
-			entrypoints: [entrypoint],
-			naming,
-			outdir: undefined,
-			plugins: [customResolver({
-				pathToResolveFrom: commonPath
-			}), ...build.config.plugins],
-			root: build.config.root || commonPath
-		})
+  const result = await Bun.build({
+    ...build.config,
+    entrypoints: entrypoints,
+    naming,
+    outdir: undefined,
+    plugins: [customResolver({
+      pathToResolveFrom: commonPath
+    }), ...build.config.plugins],
+    root: build.config.root || commonPath
+  });
 
-		for (const output of result.outputs) {
-			const outputText = await output.text();
-			let filePath = path.resolve(`${commonPath}/${output.path}`);
-			if (filePath.includes(tempDirPath)) {
-				filePath = filePath.replace(`/private${tempDirPath}`, commonPath);
-				filePath = filePath.replace(tempDirPath, commonPath);
-			}
+  const transpile = (flpath: string) => {
+    if (flpath.includes(tempDirPath)) {
+      let filePath = path.resolve(flpath);
+      filePath = filePath.replace(`/private${tempDirPath}`, commonPath);
+      filePath = filePath.replace(tempDirPath, commonPath);
+      return filePath;
+    }
+    return path.resolve(`${commonPath}/${flpath}`);
+  };
 
-			if (output.kind == 'entry-point') {
-				files.set(Bun.file(filePath), {
-					content: outputText,
-					attribute: jsFiles[index].details.attribute,
-					kind: jsFiles[index].details.kind,
-					hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
-					originalPath: jsFiles[index].details.originalPath
-				})
-			} else {
-				files.set(Bun.file(filePath), {
-					content: outputText,
-					kind: output.kind,
-					hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
-					originalPath: false
-				})
-			}
+	for (const output of result.outputs) {
+		const outputText = await output.text();
+    const filePath = transpile(output.path);
+
+		if (output.kind == 'entry-point') {
+      let jsFile: File | undefined;
+      // TODO: temporary method to get relative jsFile of the output
+      let flpath = `${filePath.substring(commonPath.length + 1)
+            .replace(/^[.]+\/([.]+\/)?|(-[^.]{8})?\.[a-z]+$/g, '')}`;
+      while(true) {
+        if(entrypoints.find((entrypoint, i) => {
+          if (entrypoint.includes(tempDirPath)) {
+            entrypoint = transpile(entrypoint);
+          }
+          if (entrypoint.substring(commonPath.length + 1).replace(/\.[a-z]+$/, '') == flpath) {
+            jsFile = jsFiles[i];
+            return true;
+          }
+          return false;
+        }) || !flpath.includes("/")) break;
+        flpath = flpath.replace(/^[^/]+\//, "");
+      }
+      console.assert(jsFile, `no entrypoint matches ${flpath}`);
+
+      jsFile && files.set(Bun.file(filePath), {
+        content: outputText,
+        attribute: jsFile.details.attribute,
+        kind: jsFile.details.kind,
+        hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
+        originalPath: jsFile.details.originalPath
+      });
+		} else {
+      files.set(Bun.file(filePath), {
+        content: outputText,
+        kind: output.kind,
+        hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
+        originalPath: false
+      });
 		}
 	}
 }
@@ -319,7 +342,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 async function forStyleFiles(options: BunPluginHTMLOptions | undefined, build: PluginBuilder, htmlOptions: HTMLTerserOptions, files: Map<BunFile, FileDetails>) {
 	const cssMinifier = getCSSMinifier(build.config, htmlOptions);
 	const cssFiles = getExtensionFiles(files, ['.css']);
-	
+
 	if (!cssFiles) return;
 
 	for (const item of cssFiles) {
@@ -348,7 +371,7 @@ function mapIntoKeys(files: Map<BunFile, FileDetails>) {
 async function processHtmlFiles(options: BunPluginHTMLOptions | undefined, build: PluginBuilder, files: Map<BunFile, FileDetails>, buildExtensions: readonly string[]) {
 	const htmlFiles = getExtensionFiles(files, ['.html', '.htm']);
 	const toChangeAttributes: ((rewriter: HTMLRewriter) => void)[] = [];
-	
+
 	if (!htmlFiles) return toChangeAttributes;
 
 	for (const htmlFile of htmlFiles) {
