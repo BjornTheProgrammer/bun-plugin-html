@@ -121,7 +121,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 				console.log(getLines(fileText, 4, line + 1));
 				console.log('^'.padStart(columnNumber))
 				console.error(`HTMLParseError: Specified <${el.tagName}> ${attributeName} '${attributeValue}' does not exist!`)
-				console.log(`		at ${filePath}:${line}:${columnNumber}`)
+				console.log(`	at ${filePath}:${line}:${columnNumber}`)
 				return;
 			}
 
