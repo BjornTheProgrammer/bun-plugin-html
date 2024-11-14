@@ -232,6 +232,12 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		}));
 	}
 
+	const toReplacePaths: {
+		from: string,
+		path: string,
+		resolved: string
+	}[] = [];
+
 	const customResolver = (options: { pathToResolveFrom: string }): BunPlugin => {
 		return {
 			name: "Custom Resolver",
@@ -239,6 +245,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 				build.onResolve({ filter: /[\s\S]*/ }, async (args) => {
 					try {
 						let resolved;
+						let external = false;
 						const tempPath = path.resolve(tempDirPath, args.path);
 						const originalPath = path.resolve(args.path, options.pathToResolveFrom);
 
@@ -251,11 +258,21 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 							resolved = Bun.resolveSync(args.path, options.pathToResolveFrom);
 						} else {
 							resolved = path.resolve(args.importer, '../', args.path);
+
+							if (build.config.splitting) {
+								external = true;
+								toReplacePaths.push({
+									from: args.importer,
+									resolved,
+									path: args.path,
+								})
+							}
 						}
 
 						return {
 							...args,
 							path: resolved,
+							external
 						};
 					} catch (error) {
 						console.error("Error during module resolution:");
@@ -276,6 +293,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		};
 	};
 
+	const entrypointToOutput: Map<string, string> = new Map();
 	for (const [index, entrypoint] of entrypoints.entries()) {
 		const result = await Bun.build({
 			...build.config,
@@ -285,11 +303,11 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 			plugins: [customResolver({
 				pathToResolveFrom: commonPath
 			}), ...build.config.plugins],
-			root: build.config.root || commonPath
+			root: build.config.root || commonPath,
 		})
 
 		for (const output of result.outputs) {
-			const outputText = await output.text();
+			let outputText = await output.text();
 			let filePath = path.resolve(`${commonPath}/${output.path}`);
 			if (filePath.includes(tempDirPath)) {
 				filePath = filePath.replace(`/private${tempDirPath}`, commonPath);
@@ -297,6 +315,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 			}
 
 			if (output.kind == 'entry-point') {
+				entrypointToOutput.set(jsFiles[index].file.name!, filePath);
 				files.set(Bun.file(filePath), {
 					content: outputText,
 					attribute: jsFiles[index].details.attribute,
@@ -313,6 +332,15 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 				})
 			}
 		}
+	}
+
+	for (const [file, details] of files) {
+		const toReplace = toReplacePaths.find(item => entrypointToOutput.get(item.from) === file.name);
+		if (!toReplace) continue;
+		const output = entrypointToOutput.get(toReplace.resolved)!;
+		const fromOutput = entrypointToOutput.get(toReplace.from)!;
+		const newPath = path.relative(path.parse(fromOutput).dir, output);
+		details.content = (await contentToString(details.content)).replaceAll(` from "${toReplace.path}"`, ` from "./${newPath}"`)
 	}
 }
 
