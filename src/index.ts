@@ -16,7 +16,7 @@ export type File = {
 
 export type BunPluginHTMLOptions = {
 	/**
-	 * Whether to inline all files or not. Additionally, you can choose whether to inline just 
+	 * Whether to inline all files or not. Additionally, you can choose whether to inline just
 	 * css and js files.
 	 */
 	inline?: boolean | {
@@ -35,8 +35,8 @@ export type BunPluginHTMLOptions = {
 	 */
 	minifyOptions?: HTMLTerserOptions;
 	/**
-	 * Choose what extensions to include in building of javascript files with `Bun.build`. 
-	 * 
+	 * Choose what extensions to include in building of javascript files with `Bun.build`.
+	 *
 	 * Defaults are `.js`, `.jsx`, `.ts`, and `.tsx` files.
 	 */
 	includeExtensions?: string[];
@@ -124,7 +124,7 @@ async function getAllFiles(options: BunPluginHTMLOptions | undefined, filePath: 
 				console.log(`	  at ${filePath}:${line}:${columnNumber}`)
 				return;
 			}
-			
+
 			files.push({
 				file,
 				details: {
@@ -151,7 +151,7 @@ function getExtensionFiles(files: Map<BunFile, FileDetails>, extensions: readonl
 		const extension = path.parse(file.name!).ext;
 		if (!extensions.includes(extension)) continue;
 
-		result.push({file, details});
+		result.push({ file, details });
 	}
 
 	return result;
@@ -350,7 +350,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 async function forStyleFiles(options: BunPluginHTMLOptions | undefined, build: PluginBuilder, htmlOptions: HTMLTerserOptions, files: Map<BunFile, FileDetails>) {
 	const cssMinifier = getCSSMinifier(build.config, htmlOptions);
 	const cssFiles = getExtensionFiles(files, ['.css']);
-	
+
 	if (!cssFiles) return;
 
 	for (const item of cssFiles) {
@@ -379,7 +379,7 @@ function mapIntoKeys(files: Map<BunFile, FileDetails>) {
 async function processHtmlFiles(options: BunPluginHTMLOptions | undefined, build: PluginBuilder, files: Map<BunFile, FileDetails>, buildExtensions: readonly string[]) {
 	const htmlFiles = getExtensionFiles(files, ['.html', '.htm']);
 	const toChangeAttributes: ((rewriter: HTMLRewriter) => void)[] = [];
-	
+
 	if (!htmlFiles) return toChangeAttributes;
 
 	for (const htmlFile of htmlFiles) {

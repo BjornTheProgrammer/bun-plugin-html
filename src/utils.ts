@@ -135,11 +135,11 @@ export class Processor {
 			})
 		} else {
 			this.#files.set(filepath, {
-                kind: 'chunk',
-                hash: Bun.hash(content, 1).toString(16).slice(0, 8),
-                content,
-                originalPath: filepath
-            })
+				kind: 'chunk',
+				hash: Bun.hash(content, 1).toString(16).slice(0, 8),
+				content,
+				originalPath: filepath
+			})
 		}
 	}
 
