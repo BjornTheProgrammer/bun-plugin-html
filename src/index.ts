@@ -340,7 +340,10 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		const output = entrypointToOutput.get(toReplace.resolved)!;
 		const fromOutput = entrypointToOutput.get(toReplace.from)!;
 		const newPath = path.relative(path.parse(fromOutput).dir, output);
-		details.content = (await contentToString(details.content)).replaceAll(` from "${toReplace.path}"`, ` from "./${newPath}"`)
+		details.content = (await contentToString(details.content))
+			.replaceAll(`from "${toReplace.path}"`, `from "./${newPath}"`)
+			.replaceAll(`from"${toReplace.path}"`, `from"./${newPath}"`)
+			.replaceAll(`require("${toReplace.path}")`, `require("./${newPath}")`);
 	}
 }
 
