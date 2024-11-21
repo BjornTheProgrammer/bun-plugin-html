@@ -33,4 +33,6 @@ describe("Testing Splitting", async () => {
   expect(fs.existsSync(`${generationDirectory}/${src[1]}`));
   const c = await Bun.file(`${generationDirectory}/${src[1]}`).text();
   expect(c && c.indexOf(src[0]) > -1).toBeTrue();
+  const xc = await Bun.file(`${generationDirectory}/${src[0]}`).text();
+  expect(xc && xc.includes('https://mindon.dev/hello.js')).toBeTrue();
 });
