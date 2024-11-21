@@ -242,7 +242,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		return {
 			name: "Custom Resolver",
 			setup(build) {
-				build.onResolve({ filter: /[\s\S]*/ }, async (args) => {
+				build.onResolve({ filter: /^(?!http[s]:\/\/)[\s\S]*/i }, async (args) => {
 					try {
 						let resolved;
 						let external = false;
@@ -304,7 +304,11 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 				pathToResolveFrom: commonPath
 			}), ...build.config.plugins],
 			root: build.config.root || commonPath,
-		})
+		});
+
+		if (!result.success) {
+			console.error(result.logs);
+		}
 
 		for (const output of result.outputs) {
 			let outputText = await output.text();
