@@ -244,6 +244,7 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 			setup(build) {
 				build.onResolve({ filter: /[\s\S]*/ }, async (args) => {
 					try {
+						if (isURL(args.path)) return;
 						let resolved;
 						let external = false;
 						const tempPath = path.resolve(tempDirPath, args.path);
@@ -304,7 +305,11 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 				pathToResolveFrom: commonPath
 			}), ...build.config.plugins],
 			root: build.config.root || commonPath,
-		})
+		});
+
+		if (!result.success) {
+			console.error(result.logs);
+		}
 
 		for (const output of result.outputs) {
 			let outputText = await output.text();

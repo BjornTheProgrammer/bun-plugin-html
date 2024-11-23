@@ -1,8 +1,7 @@
 import fs from "node:fs";
 import html from "../src/index";
-import { describe, expect, test } from "bun:test";
-import { sleep, sleepSync } from "bun";
-import { emptyDir, testIfFileExists } from "./utils";
+import { describe, expect } from "bun:test";
+import { emptyDir } from "./utils";
 
 describe("Testing Splitting", async () => {
   const generationDirectory = "./test/generation/splitting";
@@ -33,4 +32,6 @@ describe("Testing Splitting", async () => {
   expect(fs.existsSync(`${generationDirectory}/${src[1]}`));
   const c = await Bun.file(`${generationDirectory}/${src[1]}`).text();
   expect(c && c.indexOf(src[0]) > -1).toBeTrue();
+  const xc = await Bun.file(`${generationDirectory}/${src[0]}`).text();
+  expect(xc && xc.includes('https://cdn.jsdelivr.net/npm/luxon@3.5.0/+esm')).toBeTrue();
 });

@@ -823,12 +823,20 @@ var require_react_development = __commonJS((exports, module) => {
           var moduleObject = payload._result;
           {
             if (moduleObject === undefined) {
-              error("lazy: Expected the result of a dynamic imp" + "ort() call. " + "Instead received: %s\n\nYour code should look like: \n  " + "const MyComponent = lazy(() => imp" + "ort('./MyComponent'))\n\n" + "Did you accidentally put curly braces around the import?", moduleObject);
+              error("lazy: Expected the result of a dynamic imp" + "ort() call. " + `Instead received: %s
+
+Your code should look like: 
+  ` + "const MyComponent = lazy(() => imp" + `ort('./MyComponent'))
+
+` + "Did you accidentally put curly braces around the import?", moduleObject);
             }
           }
           {
             if (!("default" in moduleObject)) {
-              error("lazy: Expected the result of a dynamic imp" + "ort() call. " + "Instead received: %s\n\nYour code should look like: \n  " + "const MyComponent = lazy(() => imp" + "ort('./MyComponent'))", moduleObject);
+              error("lazy: Expected the result of a dynamic imp" + "ort() call. " + `Instead received: %s
+
+Your code should look like: 
+  ` + "const MyComponent = lazy(() => imp" + "ort('./MyComponent'))", moduleObject);
             }
           }
           return moduleObject.default;
@@ -970,7 +978,11 @@ var require_react_development = __commonJS((exports, module) => {
         var dispatcher = ReactCurrentDispatcher.current;
         {
           if (dispatcher === null) {
-            error("Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" + " one of the following reasons:\n" + "1. You might have mismatching versions of React and the renderer (such as React DOM)\n" + "2. You might be breaking the Rules of Hooks\n" + "3. You might have more than one copy of React in the same app\n" + "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.");
+            error("Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" + ` one of the following reasons:
+` + `1. You might have mismatching versions of React and the renderer (such as React DOM)
+` + `2. You might be breaking the Rules of Hooks
+` + `3. You might have more than one copy of React in the same app
+` + "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.");
           }
         }
         return dispatcher;
@@ -1137,7 +1149,8 @@ var require_react_development = __commonJS((exports, module) => {
               prefix = match && match[1] || "";
             }
           }
-          return "\n" + prefix + name;
+          return `
+` + prefix + name;
         }
       }
       var reentry = false;
@@ -1201,8 +1214,10 @@ var require_react_development = __commonJS((exports, module) => {
           }
         } catch (sample) {
           if (sample && control && typeof sample.stack === "string") {
-            var sampleLines = sample.stack.split("\n");
-            var controlLines = control.stack.split("\n");
+            var sampleLines = sample.stack.split(`
+`);
+            var controlLines = control.stack.split(`
+`);
             var s = sampleLines.length - 1;
             var c = controlLines.length - 1;
             while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
@@ -1215,7 +1230,8 @@ var require_react_development = __commonJS((exports, module) => {
                     s--;
                     c--;
                     if (c < 0 || sampleLines[s] !== controlLines[c]) {
-                      var _frame = "\n" + sampleLines[s].replace(" at new ", " at ");
+                      var _frame = `
+` + sampleLines[s].replace(" at new ", " at ");
                       if (fn.displayName && _frame.includes("<anonymous>")) {
                         _frame = _frame.replace("<anonymous>", fn.displayName);
                       }
@@ -1358,7 +1374,9 @@ var require_react_development = __commonJS((exports, module) => {
         if (ReactCurrentOwner.current) {
           var name = getComponentNameFromType(ReactCurrentOwner.current.type);
           if (name) {
-            return "\n\nCheck the render method of `" + name + "`.";
+            return `
+
+Check the render method of \`` + name + "`.";
           }
         }
         return "";
@@ -1367,7 +1385,9 @@ var require_react_development = __commonJS((exports, module) => {
         if (source !== undefined) {
           var fileName = source.fileName.replace(/^.*[\\\/]/, "");
           var lineNumber = source.lineNumber;
-          return "\n\nCheck your code at " + fileName + ":" + lineNumber + ".";
+          return `
+
+Check your code at ` + fileName + ":" + lineNumber + ".";
         }
         return "";
       }
@@ -1383,7 +1403,9 @@ var require_react_development = __commonJS((exports, module) => {
         if (!info) {
           var parentName = typeof parentType === "string" ? parentType : parentType.displayName || parentType.name;
           if (parentName) {
-            info = "\n\nCheck the top-level render call using <" + parentName + ">.";
+            info = `
+
+Check the top-level render call using <` + parentName + ">.";
           }
         }
         return info;
@@ -2988,7 +3010,8 @@ var require_react_dom_development = __commonJS((exports) => {
               prefix = match && match[1] || "";
             }
           }
-          return "\n" + prefix + name;
+          return `
+` + prefix + name;
         }
       }
       var reentry = false;
@@ -3052,8 +3075,10 @@ var require_react_dom_development = __commonJS((exports) => {
           }
         } catch (sample) {
           if (sample && control && typeof sample.stack === "string") {
-            var sampleLines = sample.stack.split("\n");
-            var controlLines = control.stack.split("\n");
+            var sampleLines = sample.stack.split(`
+`);
+            var controlLines = control.stack.split(`
+`);
             var s = sampleLines.length - 1;
             var c = controlLines.length - 1;
             while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
@@ -3066,7 +3091,8 @@ var require_react_dom_development = __commonJS((exports) => {
                     s--;
                     c--;
                     if (c < 0 || sampleLines[s] !== controlLines[c]) {
-                      var _frame = "\n" + sampleLines[s].replace(" at new ", " at ");
+                      var _frame = `
+` + sampleLines[s].replace(" at new ", " at ");
                       if (fn.displayName && _frame.includes("<anonymous>")) {
                         _frame = _frame.replace("<anonymous>", fn.displayName);
                       }
@@ -3185,7 +3211,9 @@ var require_react_dom_development = __commonJS((exports) => {
           } while (node);
           return info;
         } catch (x) {
-          return "\nError generating stack: " + x.message + "\n" + x.stack;
+          return `
+Error generating stack: ` + x.message + `
+` + x.stack;
         }
       }
       function getWrappedName(outerType, innerType, wrapperName) {
@@ -3716,7 +3744,9 @@ var require_react_dom_development = __commonJS((exports) => {
       function getDeclarationErrorAddendum() {
         var ownerName = getCurrentFiberOwnerNameInDevOrNull();
         if (ownerName) {
-          return "\n\nCheck the render method of `" + ownerName + "`.";
+          return `
+
+Check the render method of \`` + ownerName + "`.";
         }
         return "";
       }
@@ -5004,7 +5034,9 @@ var require_react_dom_development = __commonJS((exports) => {
             if (value) {
               error("Received `%s` for a non-boolean attribute `%s`.\n\n" + "If you want to write it to the DOM, pass a string instead: " + '%s="%s" or %s={value.toString()}.', value, name, name, value, name);
             } else {
-              error("Received `%s` for a non-boolean attribute `%s`.\n\n" + "If you want to write it to the DOM, pass a string instead: " + '%s="%s" or %s={value.toString()}.\n\n' + "If you used to conditionally omit it with %s={condition && value}, " + "pass %s={condition ? value : undefined} instead.", value, name, name, value, name, name, name);
+              error("Received `%s` for a non-boolean attribute `%s`.\n\n" + "If you want to write it to the DOM, pass a string instead: " + `%s="%s" or %s={value.toString()}.
+
+` + "If you used to conditionally omit it with %s={condition && value}, " + "pass %s={condition ? value : undefined} instead.", value, name, name, value, name, name, name);
             }
             warnedProperties$1[name] = true;
             return true;
@@ -8716,7 +8748,8 @@ var require_react_dom_development = __commonJS((exports) => {
           checkHtmlStringCoercion(markup);
         }
         var markupString = typeof markup === "string" ? markup : "" + markup;
-        return markupString.replace(NORMALIZE_NEWLINES_REGEX, "\n").replace(NORMALIZE_NULL_AND_REPLACEMENT_REGEX, "");
+        return markupString.replace(NORMALIZE_NEWLINES_REGEX, `
+`).replace(NORMALIZE_NULL_AND_REPLACEMENT_REGEX, "");
       }
       function checkForUnmatchedText(serverText, clientText, isConcurrentMode, shouldWarnDev) {
         var normalizedClientText = normalizeMarkupForTextOrAttribute(clientText);
@@ -10349,7 +10382,7 @@ var require_react_dom_development = __commonJS((exports) => {
           var childContext = instance.getChildContext();
           for (var contextKey in childContext) {
             if (!(contextKey in childContextTypes)) {
-              throw new Error((getComponentNameFromFiber(fiber) || "Unknown") + ".getChildContext(): key \"" + contextKey + "\" is not defined in childContextTypes.");
+              throw new Error((getComponentNameFromFiber(fiber) || "Unknown") + '.getChildContext(): key "' + contextKey + '" is not defined in childContextTypes.');
             }
           }
           {
@@ -11052,27 +11085,53 @@ var require_react_dom_development = __commonJS((exports) => {
           }
           if (UNSAFE_componentWillMountUniqueNames.size > 0) {
             var sortedNames = setToSortedString(UNSAFE_componentWillMountUniqueNames);
-            error("Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code. " + "See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n" + "* Move code with side effects to componentDidMount, and set initial state in the constructor.\n" + "\nPlease update the following components: %s", sortedNames);
+            error("Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code. " + `See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+` + `* Move code with side effects to componentDidMount, and set initial state in the constructor.
+` + `
+Please update the following components: %s`, sortedNames);
           }
           if (UNSAFE_componentWillReceivePropsUniqueNames.size > 0) {
             var _sortedNames = setToSortedString(UNSAFE_componentWillReceivePropsUniqueNames);
-            error("Using UNSAFE_componentWillReceiveProps in strict mode is not recommended " + "and may indicate bugs in your code. " + "See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n" + "* Move data fetching code or side effects to componentDidUpdate.\n" + "* If you're updating state whenever props change, " + "refactor your code to use memoization techniques or move it to " + "static getDerivedStateFromProps. Learn more at: https://reactjs.org/link/derived-state\n" + "\nPlease update the following components: %s", _sortedNames);
+            error("Using UNSAFE_componentWillReceiveProps in strict mode is not recommended " + "and may indicate bugs in your code. " + `See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+` + `* Move data fetching code or side effects to componentDidUpdate.
+` + "* If you're updating state whenever props change, " + "refactor your code to use memoization techniques or move it to " + `static getDerivedStateFromProps. Learn more at: https://reactjs.org/link/derived-state
+` + `
+Please update the following components: %s`, _sortedNames);
           }
           if (UNSAFE_componentWillUpdateUniqueNames.size > 0) {
             var _sortedNames2 = setToSortedString(UNSAFE_componentWillUpdateUniqueNames);
-            error("Using UNSAFE_componentWillUpdate in strict mode is not recommended " + "and may indicate bugs in your code. " + "See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n" + "* Move data fetching code or side effects to componentDidUpdate.\n" + "\nPlease update the following components: %s", _sortedNames2);
+            error("Using UNSAFE_componentWillUpdate in strict mode is not recommended " + "and may indicate bugs in your code. " + `See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+` + `* Move data fetching code or side effects to componentDidUpdate.
+` + `
+Please update the following components: %s`, _sortedNames2);
           }
           if (componentWillMountUniqueNames.size > 0) {
             var _sortedNames3 = setToSortedString(componentWillMountUniqueNames);
-            warn("componentWillMount has been renamed, and is not recommended for use. " + "See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n" + "* Move code with side effects to componentDidMount, and set initial state in the constructor.\n" + "* Rename componentWillMount to UNSAFE_componentWillMount to suppress " + "this warning in non-strict mode. In React 18.x, only the UNSAFE_ name will work. " + "To rename all deprecated lifecycles to their new names, you can run " + "`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n" + "\nPlease update the following components: %s", _sortedNames3);
+            warn("componentWillMount has been renamed, and is not recommended for use. " + `See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+` + `* Move code with side effects to componentDidMount, and set initial state in the constructor.
+` + "* Rename componentWillMount to UNSAFE_componentWillMount to suppress " + "this warning in non-strict mode. In React 18.x, only the UNSAFE_ name will work. " + "To rename all deprecated lifecycles to their new names, you can run " + "`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n" + `
+Please update the following components: %s`, _sortedNames3);
           }
           if (componentWillReceivePropsUniqueNames.size > 0) {
             var _sortedNames4 = setToSortedString(componentWillReceivePropsUniqueNames);
-            warn("componentWillReceiveProps has been renamed, and is not recommended for use. " + "See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n" + "* Move data fetching code or side effects to componentDidUpdate.\n" + "* If you're updating state whenever props change, refactor your " + "code to use memoization techniques or move it to " + "static getDerivedStateFromProps. Learn more at: https://reactjs.org/link/derived-state\n" + "* Rename componentWillReceiveProps to UNSAFE_componentWillReceiveProps to suppress " + "this warning in non-strict mode. In React 18.x, only the UNSAFE_ name will work. " + "To rename all deprecated lifecycles to their new names, you can run " + "`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n" + "\nPlease update the following components: %s", _sortedNames4);
+            warn("componentWillReceiveProps has been renamed, and is not recommended for use. " + `See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+` + `* Move data fetching code or side effects to componentDidUpdate.
+` + "* If you're updating state whenever props change, refactor your " + "code to use memoization techniques or move it to " + `static getDerivedStateFromProps. Learn more at: https://reactjs.org/link/derived-state
+` + "* Rename componentWillReceiveProps to UNSAFE_componentWillReceiveProps to suppress " + "this warning in non-strict mode. In React 18.x, only the UNSAFE_ name will work. " + "To rename all deprecated lifecycles to their new names, you can run " + "`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n" + `
+Please update the following components: %s`, _sortedNames4);
           }
           if (componentWillUpdateUniqueNames.size > 0) {
             var _sortedNames5 = setToSortedString(componentWillUpdateUniqueNames);
-            warn("componentWillUpdate has been renamed, and is not recommended for use. " + "See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n" + "* Move data fetching code or side effects to componentDidUpdate.\n" + "* Rename componentWillUpdate to UNSAFE_componentWillUpdate to suppress " + "this warning in non-strict mode. In React 18.x, only the UNSAFE_ name will work. " + "To rename all deprecated lifecycles to their new names, you can run " + "`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n" + "\nPlease update the following components: %s", _sortedNames5);
+            warn("componentWillUpdate has been renamed, and is not recommended for use. " + `See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+` + `* Move data fetching code or side effects to componentDidUpdate.
+` + "* Rename componentWillUpdate to UNSAFE_componentWillUpdate to suppress " + "this warning in non-strict mode. In React 18.x, only the UNSAFE_ name will work. " + "To rename all deprecated lifecycles to their new names, you can run " + "`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n" + `
+Please update the following components: %s`, _sortedNames5);
           }
         };
         var pendingLegacyContextWarning = new Map;
@@ -11109,7 +11168,13 @@ var require_react_dom_development = __commonJS((exports) => {
             var sortedNames = setToSortedString(uniqueNames);
             try {
               setCurrentFiber(firstFiber);
-              error("Legacy context API has been detected within a strict-mode tree." + "\n\nThe old API will be supported in all 16.x releases, but applications " + "using it should migrate to the new version." + "\n\nPlease update the following components: %s" + "\n\nLearn more about this warning here: https://reactjs.org/link/legacy-context", sortedNames);
+              error("Legacy context API has been detected within a strict-mode tree." + `
+
+The old API will be supported in all 16.x releases, but applications ` + "using it should migrate to the new version." + `
+
+Please update the following components: %s` + `
+
+Learn more about this warning here: https://reactjs.org/link/legacy-context`, sortedNames);
             } finally {
               resetCurrentFiber();
             }
@@ -11210,7 +11275,11 @@ var require_react_dom_development = __commonJS((exports) => {
               throw new Error("Expected ref to be a function, a string, an object returned by React.createRef(), or null.");
             }
             if (!element._owner) {
-              throw new Error("Element ref was specified as a string (" + mixedRef + ") but no owner was set. This could happen for one of" + " the following reasons:\n" + "1. You may be adding a ref to a function component\n" + "2. You may be adding a ref to a component that was not created inside a component's render method\n" + "3. You have multiple copies of React loaded\n" + "See https://reactjs.org/link/refs-must-have-owner for more information.");
+              throw new Error("Element ref was specified as a string (" + mixedRef + ") but no owner was set. This could happen for one of" + ` the following reasons:
+` + `1. You may be adding a ref to a function component
+` + `2. You may be adding a ref to a component that was not created inside a component's render method
+` + `3. You have multiple copies of React loaded
+` + "See https://reactjs.org/link/refs-must-have-owner for more information.");
             }
           }
         }
@@ -11498,7 +11567,7 @@ var require_react_dom_development = __commonJS((exports) => {
                   knownKeys.add(key);
                   break;
                 }
-                error("Encountered two children with the same key, `%s`. " + "Keys should be unique so that components maintain their identity " + "across updates. Non-unique keys may cause children to be " + "duplicated and/or omitted \u2014 the behavior is unsupported and " + "could change in a future version.", key);
+                error("Encountered two children with the same key, `%s`. " + "Keys should be unique so that components maintain their identity " + "across updates. Non-unique keys may cause children to be " + "duplicated and/or omitted — the behavior is unsupported and " + "could change in a future version.", key);
                 break;
               case REACT_LAZY_TYPE:
                 var payload = child._payload;
@@ -12745,16 +12814,26 @@ var require_react_dom_development = __commonJS((exports) => {
                 while (row.length < secondColumnStart) {
                   row += " ";
                 }
-                row += newHookName + "\n";
+                row += newHookName + `
+`;
                 table += row;
               }
-              error("React has detected a change in the order of Hooks called by %s. " + "This will lead to bugs and errors if not fixed. " + "For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n" + "   Previous render            Next render\n" + "   ------------------------------------------------------\n" + "%s" + "   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n", componentName, table);
+              error("React has detected a change in the order of Hooks called by %s. " + "This will lead to bugs and errors if not fixed. " + `For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
+
+` + `   Previous render            Next render
+` + `   ------------------------------------------------------
+` + "%s" + `   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`, componentName, table);
             }
           }
         }
       }
       function throwInvalidHookError() {
-        throw new Error("Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" + " one of the following reasons:\n" + "1. You might have mismatching versions of React and the renderer (such as React DOM)\n" + "2. You might be breaking the Rules of Hooks\n" + "3. You might have more than one copy of React in the same app\n" + "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.");
+        throw new Error("Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" + ` one of the following reasons:
+` + `1. You might have mismatching versions of React and the renderer (such as React DOM)
+` + `2. You might be breaking the Rules of Hooks
+` + `3. You might have more than one copy of React in the same app
+` + "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.");
       }
       function areHookInputsEqual(nextDeps, prevDeps) {
         {
@@ -12770,7 +12849,10 @@ var require_react_dom_development = __commonJS((exports) => {
         }
         {
           if (nextDeps.length !== prevDeps.length) {
-            error("The final argument passed to %s changed size between renders. The " + "order and size of this array must remain constant.\n\n" + "Previous: %s\n" + "Incoming: %s", currentHookNameInDev, "[" + prevDeps.join(", ") + "]", "[" + nextDeps.join(", ") + "]");
+            error("The final argument passed to %s changed size between renders. The " + `order and size of this array must remain constant.
+
+` + `Previous: %s
+` + "Incoming: %s", currentHookNameInDev, "[" + prevDeps.join(", ") + "]", "[" + nextDeps.join(", ") + "]");
           }
         }
         for (var i = 0;i < prevDeps.length && i < nextDeps.length; i++) {
@@ -14811,11 +14893,15 @@ var require_react_dom_development = __commonJS((exports) => {
           {
             if (ctor.childContextTypes && !didWarnAboutLegacyContext$1.has(ctor) && (workInProgress2.mode & StrictLegacyMode) === NoMode) {
               didWarnAboutLegacyContext$1.add(ctor);
-              error("%s uses the legacy childContextTypes API which is no longer " + "supported and will be removed in the next major release. Use " + "React.createContext() instead\n\n." + "Learn more about this warning here: https://reactjs.org/link/legacy-context", name);
+              error("%s uses the legacy childContextTypes API which is no longer " + "supported and will be removed in the next major release. Use " + `React.createContext() instead
+
+.` + "Learn more about this warning here: https://reactjs.org/link/legacy-context", name);
             }
             if (ctor.contextTypes && !didWarnAboutLegacyContext$1.has(ctor) && (workInProgress2.mode & StrictLegacyMode) === NoMode) {
               didWarnAboutLegacyContext$1.add(ctor);
-              error("%s uses the legacy contextTypes API which is no longer supported " + "and will be removed in the next major release. Use " + "React.createContext() with static contextType instead.\n\n" + "Learn more about this warning here: https://reactjs.org/link/legacy-context", name);
+              error("%s uses the legacy contextTypes API which is no longer supported " + "and will be removed in the next major release. Use " + `React.createContext() with static contextType instead.
+
+` + "Learn more about this warning here: https://reactjs.org/link/legacy-context", name);
             }
             if (instance.contextTypes) {
               error("contextTypes was defined as an instance property on %s. Use a static " + "property to define contextTypes instead.", name);
@@ -14959,7 +15045,15 @@ var require_react_dom_development = __commonJS((exports) => {
               var newApiName = typeof ctor.getDerivedStateFromProps === "function" ? "getDerivedStateFromProps()" : "getSnapshotBeforeUpdate()";
               if (!didWarnAboutLegacyLifecyclesAndDerivedState.has(_componentName)) {
                 didWarnAboutLegacyLifecyclesAndDerivedState.add(_componentName);
-                error("Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n" + "%s uses %s but also contains the following legacy lifecycles:%s%s%s\n\n" + "The above lifecycles should be removed. Learn more about this warning here:\n" + "https://reactjs.org/link/unsafe-component-lifecycles", _componentName, newApiName, foundWillMountName !== null ? "\n  " + foundWillMountName : "", foundWillReceivePropsName !== null ? "\n  " + foundWillReceivePropsName : "", foundWillUpdateName !== null ? "\n  " + foundWillUpdateName : "");
+                error(`Unsafe legacy lifecycles will not be called for components using new component APIs.
+
+` + `%s uses %s but also contains the following legacy lifecycles:%s%s%s
+
+` + `The above lifecycles should be removed. Learn more about this warning here:
+` + "https://reactjs.org/link/unsafe-component-lifecycles", _componentName, newApiName, foundWillMountName !== null ? `
+  ` + foundWillMountName : "", foundWillReceivePropsName !== null ? `
+  ` + foundWillReceivePropsName : "", foundWillUpdateName !== null ? `
+  ` + foundWillUpdateName : "");
               }
             }
           }
@@ -15257,12 +15351,16 @@ var require_react_dom_development = __commonJS((exports) => {
             var componentNameMessage = componentName ? "The above error occurred in the <" + componentName + "> component:" : "The above error occurred in one of your React components:";
             var errorBoundaryMessage;
             if (boundary.tag === HostRoot) {
-              errorBoundaryMessage = "Consider adding an error boundary to your tree to customize error handling behavior.\n" + "Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.";
+              errorBoundaryMessage = `Consider adding an error boundary to your tree to customize error handling behavior.
+` + "Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.";
             } else {
               var errorBoundaryName = getComponentNameFromFiber(boundary) || "Anonymous";
               errorBoundaryMessage = "React will try to recreate this component tree from scratch " + ("using the error boundary you provided, " + errorBoundaryName + ".");
             }
-            var combinedMessage = componentNameMessage + "\n" + componentStack + "\n\n" + ("" + errorBoundaryMessage);
+            var combinedMessage = componentNameMessage + `
+` + componentStack + `
+
+` + ("" + errorBoundaryMessage);
             console["error"](combinedMessage);
           } else {
           }
@@ -16179,7 +16277,9 @@ var require_react_dom_development = __commonJS((exports) => {
             var info = "";
             var ownerName = getCurrentFiberOwnerNameInDevOrNull();
             if (ownerName) {
-              info += "\n\nCheck the render method of `" + ownerName + "`.";
+              info += `
+
+Check the render method of \`` + ownerName + "`.";
             }
             var warningKey = ownerName || "";
             var debugSource = workInProgress2._debugSource;
@@ -18058,7 +18158,20 @@ var require_react_dom_development = __commonJS((exports) => {
                   if (destroy === null) {
                     addendum = " You returned null. If your effect does not require clean " + "up, return undefined (or nothing).";
                   } else if (typeof destroy.then === "function") {
-                    addendum = "\n\nIt looks like you wrote " + hookName + "(async () => ...) or returned a Promise. " + "Instead, write the async function inside your effect " + "and call it immediately:\n\n" + hookName + "(() => {\n" + "  async function fetchData() {\n" + "    // You can await here\n" + "    const response = await MyAPI.getData(someId);\n" + "    // ...\n" + "  }\n" + "  fetchData();\n" + "}, [someId]); // Or [] if effect doesn't need props or state\n\n" + "Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching";
+                    addendum = `
+
+It looks like you wrote ` + hookName + "(async () => ...) or returned a Promise. " + "Instead, write the async function inside your effect " + `and call it immediately:
+
+` + hookName + `(() => {
+` + `  async function fetchData() {
+` + `    // You can await here
+` + `    const response = await MyAPI.getData(someId);
+` + `    // ...
+` + `  }
+` + `  fetchData();
+` + `}, [someId]); // Or [] if effect doesn't need props or state
+
+` + "Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching";
                   } else {
                     addendum = " You returned: " + destroy;
                   }
@@ -20674,7 +20787,11 @@ var require_react_dom_development = __commonJS((exports) => {
           fiber = fiber.return;
         }
         {
-          error("Internal React error: Attempted to capture a commit phase error " + "inside a detached tree. This indicates a bug in React. Likely " + "causes include deleting the same fiber more than once, committing an " + "already-finished tree, or an inconsistent return pointer.\n\n" + "Error message:\n\n%s", error$1);
+          error("Internal React error: Attempted to capture a commit phase error " + "inside a detached tree. This indicates a bug in React. Likely " + "causes include deleting the same fiber more than once, committing an " + `already-finished tree, or an inconsistent return pointer.
+
+` + `Error message:
+
+%s`, error$1);
         }
       }
       function pingSuspendedRoot(root2, wakeable, pingedLanes) {
@@ -20943,7 +21060,16 @@ var require_react_dom_development = __commonJS((exports) => {
             var previousFiber = current;
             try {
               setCurrentFiber(fiber);
-              error("An update to %s inside a test was not wrapped in act(...).\n\n" + "When testing, code that causes React state updates should be " + "wrapped into act(...):\n\n" + "act(() => {\n" + "  /* fire events that update state */\n" + "});\n" + "/* assert on the output */\n\n" + "This ensures that you're testing the behavior the user would see " + "in the browser." + " Learn more at https://reactjs.org/link/wrap-tests-with-act", getComponentNameFromFiber(fiber));
+              error(`An update to %s inside a test was not wrapped in act(...).
+
+` + "When testing, code that causes React state updates should be " + `wrapped into act(...):
+
+` + `act(() => {
+` + `  /* fire events that update state */
+` + `});
+` + `/* assert on the output */
+
+` + "This ensures that you're testing the behavior the user would see " + "in the browser." + " Learn more at https://reactjs.org/link/wrap-tests-with-act", getComponentNameFromFiber(fiber));
             } finally {
               if (previousFiber) {
                 setCurrentFiber(fiber);
@@ -20957,7 +21083,16 @@ var require_react_dom_development = __commonJS((exports) => {
       function warnIfSuspenseResolutionNotWrappedWithActDEV(root2) {
         {
           if (root2.tag !== LegacyRoot && isConcurrentActEnvironment() && ReactCurrentActQueue$1.current === null) {
-            error("A suspended resource finished loading inside a test, but the event " + "was not wrapped in act(...).\n\n" + "When testing, code that resolves suspended data should be wrapped " + "into act(...):\n\n" + "act(() => {\n" + "  /* finish loading suspended data */\n" + "});\n" + "/* assert on the output */\n\n" + "This ensures that you're testing the behavior the user would see " + "in the browser." + " Learn more at https://reactjs.org/link/wrap-tests-with-act");
+            error("A suspended resource finished loading inside a test, but the event " + `was not wrapped in act(...).
+
+` + "When testing, code that resolves suspended data should be wrapped " + `into act(...):
+
+` + `act(() => {
+` + `  /* finish loading suspended data */
+` + `});
+` + `/* assert on the output */
+
+` + "This ensures that you're testing the behavior the user would see " + "in the browser." + " Learn more at https://reactjs.org/link/wrap-tests-with-act");
           }
         }
       }
@@ -21523,7 +21658,9 @@ var require_react_dom_development = __commonJS((exports) => {
                   }
                   var ownerName = owner ? getComponentNameFromFiber(owner) : null;
                   if (ownerName) {
-                    info += "\n\nCheck the render method of `" + ownerName + "`.";
+                    info += `
+
+Check the render method of \`` + ownerName + "`.";
                   }
                 }
                 throw new Error("Element type is invalid: expected a string (for built-in " + "components) or a class/function (for composite components) " + ("but got: " + (type == null ? type : typeof type) + "." + info));
@@ -21839,7 +21976,9 @@ var require_react_dom_development = __commonJS((exports) => {
         {
           if (isRendering && current !== null && !didWarnAboutNestedUpdates) {
             didWarnAboutNestedUpdates = true;
-            error("Render methods should be a pure function of props and state; " + "triggering nested component updates from render is not allowed. " + "If necessary, trigger nested updates in componentDidUpdate.\n\n" + "Check the render method of %s.", getComponentNameFromFiber(current) || "Unknown");
+            error("Render methods should be a pure function of props and state; " + "triggering nested component updates from render is not allowed. " + `If necessary, trigger nested updates in componentDidUpdate.
+
+` + "Check the render method of %s.", getComponentNameFromFiber(current) || "Unknown");
           }
         }
         var update = createUpdate(eventTime, lane);
@@ -22222,7 +22361,10 @@ var require_react_dom_development = __commonJS((exports) => {
               warn("hydrate through createRoot is deprecated. Use ReactDOMClient.hydrateRoot(container, <App />) instead.");
             } else {
               if (typeof options2 === "object" && options2 !== null && options2.$$typeof === REACT_ELEMENT_TYPE) {
-                error("You passed a JSX element to createRoot. You probably meant to " + "call root.render instead. " + "Example usage:\n\n" + "  let root = createRoot(domContainer);\n" + "  root.render(<App />);");
+                error("You passed a JSX element to createRoot. You probably meant to " + "call root.render instead. " + `Example usage:
+
+` + `  let root = createRoot(domContainer);
+` + "  root.render(<App />);");
               }
             }
           }
@@ -22588,7 +22730,8 @@ var require_react_dom_development = __commonJS((exports) => {
           if (navigator.userAgent.indexOf("Chrome") > -1 && navigator.userAgent.indexOf("Edge") === -1 || navigator.userAgent.indexOf("Firefox") > -1) {
             var protocol = window.location.protocol;
             if (/^(https?|file):$/.test(protocol)) {
-              console.info("%cDownload the React DevTools " + "for a better development experience: " + "https://reactjs.org/link/react-devtools" + (protocol === "file:" ? "\nYou might need to use a local HTTP server (instead of file://): " + "https://reactjs.org/link/react-devtools-faq" : ""), "font-weight:bold");
+              console.info("%cDownload the React DevTools " + "for a better development experience: " + "https://reactjs.org/link/react-devtools" + (protocol === "file:" ? `
+You might need to use a local HTTP server (instead of file://): ` + "https://reactjs.org/link/react-devtools-faq" : ""), "font-weight:bold");
             }
           }
         }
@@ -22861,7 +23004,8 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
               prefix = match && match[1] || "";
             }
           }
-          return "\n" + prefix + name;
+          return `
+` + prefix + name;
         }
       }
       var reentry = false;
@@ -22925,8 +23069,10 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
           }
         } catch (sample) {
           if (sample && control && typeof sample.stack === "string") {
-            var sampleLines = sample.stack.split("\n");
-            var controlLines = control.stack.split("\n");
+            var sampleLines = sample.stack.split(`
+`);
+            var controlLines = control.stack.split(`
+`);
             var s = sampleLines.length - 1;
             var c = controlLines.length - 1;
             while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
@@ -22939,7 +23085,8 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
                     s--;
                     c--;
                     if (c < 0 || sampleLines[s] !== controlLines[c]) {
-                      var _frame = "\n" + sampleLines[s].replace(" at new ", " at ");
+                      var _frame = `
+` + sampleLines[s].replace(" at new ", " at ");
                       if (fn.displayName && _frame.includes("<anonymous>")) {
                         _frame = _frame.replace("<anonymous>", fn.displayName);
                       }
@@ -23282,7 +23429,9 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
           if (ReactCurrentOwner$1.current) {
             var name = getComponentNameFromType(ReactCurrentOwner$1.current.type);
             if (name) {
-              return "\n\nCheck the render method of `" + name + "`.";
+              return `
+
+Check the render method of \`` + name + "`.";
             }
           }
           return "";
@@ -23293,7 +23442,9 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
           if (source !== undefined) {
             var fileName = source.fileName.replace(/^.*[\\\/]/, "");
             var lineNumber = source.lineNumber;
-            return "\n\nCheck your code at " + fileName + ":" + lineNumber + ".";
+            return `
+
+Check your code at ` + fileName + ":" + lineNumber + ".";
           }
           return "";
         }
@@ -23305,7 +23456,9 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
           if (!info) {
             var parentName = typeof parentType === "string" ? parentType : parentType.displayName || parentType.name;
             if (parentName) {
-              info = "\n\nCheck the top-level render call using <" + parentName + ">.";
+              info = `
+
+Check the top-level render call using <` + parentName + ">.";
             }
           }
           return info;
@@ -23469,7 +23622,12 @@ var require_react_jsx_dev_runtime_development = __commonJS((exports) => {
               var beforeExample = keys.length > 0 ? "{key: someKey, " + keys.join(": ..., ") + ": ...}" : "{key: someKey}";
               if (!didWarnAboutKeySpread[componentName + beforeExample]) {
                 var afterExample = keys.length > 0 ? "{" + keys.join(": ..., ") + ": ...}" : "{}";
-                error('A props object containing a "key" prop is being spread into JSX:\n' + "  let props = %s;\n" + "  <%s {...props} />\n" + "React keys must be passed directly to JSX without using spread:\n" + "  let props = %s;\n" + "  <%s key={someKey} {...props} />", beforeExample, componentName, afterExample, componentName);
+                error(`A props object containing a "key" prop is being spread into JSX:
+` + `  let props = %s;
+` + `  <%s {...props} />
+` + `React keys must be passed directly to JSX without using spread:
+` + `  let props = %s;
+` + "  <%s key={someKey} {...props} />", beforeExample, componentName, afterExample, componentName);
                 didWarnAboutKeySpread[componentName + beforeExample] = true;
               }
             }
