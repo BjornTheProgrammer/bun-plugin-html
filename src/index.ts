@@ -242,8 +242,9 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 		return {
 			name: "Custom Resolver",
 			setup(build) {
-				build.onResolve({ filter: /^(?!http[s]:\/\/)[\s\S]*/i }, async (args) => {
+				build.onResolve({ filter: /[\s\S]*/ }, async (args) => {
 					try {
+						if (isURL(args.path)) return;
 						let resolved;
 						let external = false;
 						const tempPath = path.resolve(tempDirPath, args.path);
