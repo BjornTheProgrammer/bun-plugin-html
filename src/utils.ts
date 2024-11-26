@@ -12,7 +12,11 @@ export type FileDetails = {
 	originalPath: string | false,
 }
 
+const urlTester = /^(#|http[s]:\/\/)/i;
 export function isURL(link: string) {
+	if (urlTester.test(link)) {
+		return true;
+	}
 	try {
 		const url = new URL(link);
 		return true;
@@ -120,9 +124,9 @@ export class Processor {
 
 	/**
 	 * Writes the specified file at filepath with the specified content.
-	 * 
+	 *
 	 * If the path is the same as what the original file path was, then this will overwrite the content in that file.
-	 * 
+	 *
 	 * If it isn't this creates a new file which will be outputted to the outdir. New files are treated as chunks.
 	 */
 	writeFile(filepath: string, content: string) {

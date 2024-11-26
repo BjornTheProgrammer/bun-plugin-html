@@ -9,6 +9,7 @@ import { FileDetails, Processor, attributeToSelector, changeFileExtension, conte
 import { minify as terser, MinifyOptions } from 'terser';
 import os from 'os';
 import fs from 'fs/promises'
+import * as sass from 'sass';
 
 export type File = {
 	file: BunFile, details: FileDetails
@@ -354,14 +355,18 @@ async function forJsFiles(options: BunPluginHTMLOptions | undefined, build: Plug
 
 async function forStyleFiles(options: BunPluginHTMLOptions | undefined, build: PluginBuilder, htmlOptions: HTMLTerserOptions, files: Map<BunFile, FileDetails>) {
 	const cssMinifier = getCSSMinifier(build.config, htmlOptions);
-	const cssFiles = getExtensionFiles(files, ['.css']);
+	const cssFiles = getExtensionFiles(files, ['.css', '.scss', '.sass']);
 
 	if (!cssFiles) return;
 
 	for (const item of cssFiles) {
 		const file = item.file;
-		let content = contentToString(item.details.content) || file.text();
-		content = cssMinifier(await content);
+		let content = await contentToString(item.details.content) || await file.text();
+		if (/\.s[ac]ss$/i.test(item.details.originalPath || '')) {
+			content = sass.compileString(content, {style: "compressed"}).css;
+		} else {
+			content = cssMinifier(content);
+		}
 		files.set(file, {
 			content,
 			attribute: item.details.attribute,
@@ -395,13 +400,16 @@ async function processHtmlFiles(options: BunPluginHTMLOptions | undefined, build
 
 				const extension = path.parse(file.name!).ext;
 
-				if (extension == '.css') {
+				if (/\.(c|s[ac])ss$/i.test(extension)) {
 					if (options && (options.inline === true || (typeof options.inline === 'object' && options.inline?.css === true))) {
 						files.delete(file);
 						toChangeAttributes.push((rewriter: HTMLRewriter) => {
 							rewriter.on(selector, {
 								async element(el) {
-									const content = await contentToString(details.content) || await file.text();
+									let content = await contentToString(details.content) || await file.text();
+									if (/\.s[ac]ss$/i.test(extension)) {
+										content = sass.compileString(content).css;
+									}
 									el.replace(`<style>${content}</style>`, {
 										html: true
 									})
@@ -449,7 +457,7 @@ async function renameFile(options: BunPluginHTMLOptions | undefined, build: Plug
 	const extension = path.parse(file.name!).ext;
 
 	let naming: string | undefined;
-	if (extension == '.css' && options && options.naming?.css) {
+	if (/\.(c|s[ac])ss$/i.test(extension) && options && options.naming?.css) {
 		naming = options.naming.css
 	} else if (typeof build.config.naming === 'string') {
 		naming = build.config.naming
@@ -466,6 +474,10 @@ async function renameFile(options: BunPluginHTMLOptions | undefined, build: Plug
 	let dir = parsedPath.dir;
 	let ext = parsedPath.ext.replace('.', '');
 	let name = parsedPath.name;
+
+	if (/s[ac]ss$/i.test(ext)) {
+		ext = 'css';
+	}
 
 	const newPath = naming
 		.replaceAll('[dir]', dir)
