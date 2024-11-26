@@ -15,7 +15,8 @@
     "@types/clean-css": "^4.2.11",
     "@types/html-minifier-terser": "^7.0.2",
     "clean-css": "^5.3.3",
-    "html-minifier-terser": "^7.2.0"
+    "html-minifier-terser": "^7.2.0",
+    "sass": "^1.81.0"
   },
   "devDependencies": {
     "chalk": "^5.3.0",
