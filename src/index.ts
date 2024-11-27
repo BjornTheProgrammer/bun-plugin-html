@@ -623,18 +623,23 @@ async function renameFile(
 
 	const resolved = path.resolve(sharedPath, newPath);
 
-	const np = path.parse(newPath);
-	const { root, base } = parsedPath;
-	const m = _mapping[base] || {};
-	const k = path.join(root, dir);
-	if (!m[k]) {
-		const as = path.join(np.root, np.dir, np.base);
-		if (as !== path.join(k, base)) {
-			m[k] = { as, fd: Bun.file(resolved) };
-			_mapping[base] = m;
+	const parsedNewPath = path.parse(newPath);
+	const { root: originalRoot, base: originalBase } = parsedPath;
+	const mappingForBase = _mapping[originalBase] || {};
+	const mappingKey = path.join(originalRoot, dir);
+	if (!mappingForBase[mappingKey]) {
+		const as = path.join(
+			parsedNewPath.root,
+			parsedNewPath.dir,
+			parsedNewPath.base,
+		);
+		if (as !== path.join(mappingKey, originalBase)) {
+			mappingForBase[mappingKey] = { as, fd: Bun.file(resolved) };
+			_mapping[originalBase] = mappingForBase;
 		}
 	}
-	return m[k]?.fd || Bun.file(resolved);
+
+	return mappingForBase[mappingKey]?.fd || Bun.file(resolved);
 }
 
 const html = (options?: BunPluginHTMLOptions): BunPlugin => {
@@ -645,10 +650,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 	const save = async (
 		name: string,
 		body: Blob | NodeJS.TypedArray | ArrayBufferLike | string | Bun.BlobPart[],
-		options?: {
-			mode?: number;
-			createPath?: boolean;
-		},
+		options?: Parameters<typeof Bun.write>[2],
 		outdir?: string,
 	) => {
 		if (_saved[name]) return; // avoid duplicated-saving a file
