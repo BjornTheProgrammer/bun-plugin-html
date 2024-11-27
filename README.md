@@ -40,6 +40,7 @@ Here is an example of an HTML file (`index.html`) that serves as an input:
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" type="text/css" href="./style.scss" />
     <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
     <title>Hello World!</title>
 </head>
@@ -58,6 +59,7 @@ Along with a file structure like the one below, the plugin generates the output 
 └── src/
     ├── index.html
     ├── main.css
+    ├── style.scss
     ├── main.ts
     ├── js/
     │   └── secondary.ts
@@ -76,6 +78,7 @@ The plugin generates the output in the specified output directory. If certain fi
 └── dist/
     ├── index.html
     ├── main.css
+    ├── style.scss
     ├── main.js
     ├── js/
     │   └── secondary.js
@@ -101,6 +104,8 @@ Here's the transformed HTML file in the output directory (`dist/index.html`):
     <script src="./js/secondary.js"></script>
 </body>
 ```
+
+Note that `sass` and `scss` files are transpiled by default.
 
 ## Configuration Options
 
@@ -242,7 +247,7 @@ await Bun.build({
 
 The `preprocessor` option takes in a funciton which will be provided a `Processor` class, in which you can modify the files provided to it, before they are processed by `bun-plugin-html`.
 
-The example below shows processing the css files with tailwind.
+The example below shows processing the css files with tailwind. By default `sass` is transpiled.
 ```ts
 await Bun.build({
     entrypoints: ['src/index.html'],
