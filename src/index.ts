@@ -48,7 +48,7 @@ export type BunPluginHTMLOptions = {
 		| {
 				css?: boolean;
 				js?: boolean;
-			};
+		  };
 	/**
 	 * `bun-plugin-html` already respects the default naming rules of Bun.build, but if you wish to override
 	 * that behavior for the naming of css files, then you can do so here.
@@ -84,7 +84,7 @@ export type BunPluginHTMLOptions = {
 	replacePathStrings?: boolean;
 };
 
-butesToSearch = [
+const attributesToSearch = [
 	'src',
 	'href',
 	'data',
@@ -475,7 +475,14 @@ async function forStyleFiles(
 	}
 }
 
-interface PathMapping { [key: string]: Object };
+interface PathMapping {
+  [key: string]: {
+    [subkey: string]: {
+      as: string,
+      fd: BunFile,
+    },
+  };
+};
 
 function mapIntoKeys(files: Map<BunFile, FileDetails>) {
 	const keys = [];
@@ -634,9 +641,10 @@ async function renameFile(
 const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 	const _replacePathStrings = !(options?.replacePathStrings === false);
 	const _mapping: PathMapping = {};
-	const _saved: { [ key: string ]: boolean } = {};
+	const _saved: { [key: string]: boolean } = {};
 
-	const save = async (name: string,
+	const save = async (
+		name: string,
 		body: Blob | NodeJS.TypedArray | ArrayBufferLike | string | Bun.BlobPart[],
 		options?: {
 			mode?: number;
