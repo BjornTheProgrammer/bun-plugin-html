@@ -476,12 +476,12 @@ async function forStyleFiles(
 }
 
 interface PathMapping {
-  [key: string]: {
-    [subkey: string]: {
-      as: string,
-      fd: BunFile,
-    },
-  };
+	[key: string]: {
+		[subkey: string]: {
+			as: string,
+			fd: BunFile,
+		},
+	};
 };
 
 function mapIntoKeys(files: Map<BunFile, FileDetails>) {
