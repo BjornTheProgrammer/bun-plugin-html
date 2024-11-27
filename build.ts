@@ -6,5 +6,5 @@ await Bun.build({
 	minify: true,
 	plugins: [dts()],
 	target: 'node',
-	external: ['sass'],
+	packages: 'external',
 });
