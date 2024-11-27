@@ -575,7 +575,6 @@ async function processHtmlFiles(
 	return toChangeAttributes;
 }
 
-
 async function renameFile(
 	options: BunPluginHTMLOptions | undefined,
 	build: PluginBuilder,
@@ -652,7 +651,6 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 		},
 		outdir?: string,
 	) => {
-		if (!name || !body) return;
 		if (_saved[name]) return; // avoid duplicated-saving a file
 		_saved[name] = true;
 		if (!_replacePathStrings || typeof body !== 'string') {
@@ -808,8 +806,8 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			)) {
 				if (!file.name || !details.content) continue;
 				await save(
-					file.name!,
-					details.content!,
+					file.name,
+					details.content,
 					{
 						createPath: true,
 					},
