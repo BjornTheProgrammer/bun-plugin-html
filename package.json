@@ -41,8 +41,8 @@
 	"scripts": {
 		"start": "bun run src/index.ts",
 		"build": "bun run build.ts",
-		"lint": "biome lint",
-		"lint:fix": "biome lint --write"
+		"lint": "biome check",
+		"lint:fix": "biome check --write"
 	},
 	"type": "module",
 	"types": "dist/index.d.ts"

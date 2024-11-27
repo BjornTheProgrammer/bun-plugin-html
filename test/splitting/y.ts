@@ -1,3 +1,3 @@
-import { Hello } from "./x.ts";
+import { Hello } from './x.ts';
 
-console.log(Hello("y"));
+console.log(Hello('y'));

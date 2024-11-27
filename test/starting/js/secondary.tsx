@@ -1,10 +1,10 @@
-import * as React from "react";
-import { render } from "react-dom";
+import type * as React from 'react';
+import { render } from 'react-dom';
 
 console.log('in secondary.tsx');
 
-window.addEventListener("DOMContentLoaded", () => {
-	const root = document.createElement("div");
+window.addEventListener('DOMContentLoaded', () => {
+	const root = document.createElement('div');
 	document.body.appendChild(root);
 	render(<App />, root);
 });

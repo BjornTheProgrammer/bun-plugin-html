@@ -1,10 +1,10 @@
+import { describe, expect, test } from 'bun:test';
 import fs from 'node:fs';
-import html from "../src/index";
-import { expect, test, describe } from "bun:test";
-import { sleep, sleepSync } from "bun";
+import { sleep, sleepSync } from 'bun';
+import html from '../src/index';
 import { emptyDir, testFileDoesntExist, testIfFileExists } from './utils';
 
-describe("Testing Generation of Exclude Extension", async () => {
+describe('Testing Generation of Exclude Extension', async () => {
 	const generationDirectory = './test/generation/exclude-extensions';
 	const expectedDirectory = './test/expected/exclude-extensions';
 
@@ -13,9 +13,9 @@ describe("Testing Generation of Exclude Extension", async () => {
 	await Bun.build({
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
-		plugins: [html({excludeExtensions: ['.css', '.ico', '.tsx']})],
-		naming: '[dir]/[name].[ext]'
-	})
+		plugins: [html({ excludeExtensions: ['.css', '.ico', '.tsx'] })],
+		naming: '[dir]/[name].[ext]',
+	});
 
 	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
 	testIfFileExists(generationDirectory, expectedDirectory, 'main.js');
