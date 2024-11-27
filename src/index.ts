@@ -48,7 +48,7 @@ export type BunPluginHTMLOptions = {
 		| {
 				css?: boolean;
 				js?: boolean;
-		  };
+			};
 	/**
 	 * `bun-plugin-html`` already respects the default naming rules of Bun.build, but if you wish to override
 	 * that behavior for the naming of css files, then you can do so here.
@@ -78,9 +78,13 @@ export type BunPluginHTMLOptions = {
 	 * Processes the files before they are processed by `bun-plugin-html`. Useful for things like tailwindcss.
 	 */
 	preprocessor?: (processor: Processor) => void | Promise<void>;
+	/**
+	 * Replace path strings
+	 */
+	replacePathStrings?: boolean;
 };
 
-const attributesToSearch = ['src', 'href', 'data', 'action'] as const;
+const attributesToSearch = ['src', 'href', 'data', 'action', 'data-src', 'lowsrc'] as const;
 const extensionsToBuild: readonly string[] = [
 	'.js',
 	'.jsx',
@@ -448,8 +452,9 @@ async function forStyleFiles(
 		const file = item.file;
 		let content =
 			(await contentToString(item.details.content)) || (await file.text());
-		if (/\.s[ac]ss$/i.test(item.details.originalPath || '')) {
-			content = sass.compileString(content, { style: 'compressed' }).css;
+		const { originalPath } = item.details;
+		if (/\.s[ac]ss$/i.test(originalPath || '')) {
+			content = sass.compileString(content, {style: "compressed"}).css;
 		} else {
 			content = cssMinifier(content);
 		}
@@ -458,7 +463,7 @@ async function forStyleFiles(
 			attribute: item.details.attribute,
 			kind: item.details.kind,
 			hash: Bun.hash(content, 1).toString(16).slice(0, 8),
-			originalPath: item.details.originalPath,
+			originalPath: originalPath,
 		});
 	}
 }
@@ -554,6 +559,7 @@ async function processHtmlFiles(
 	return toChangeAttributes;
 }
 
+
 async function renameFile(
 	options: BunPluginHTMLOptions | undefined,
 	build: PluginBuilder,
@@ -561,6 +567,7 @@ async function renameFile(
 	hash: string,
 	kind: BuildArtifact['kind'],
 	sharedPath: string,
+	_mapping: {[key:string]: any},
 ) {
 	let buildNamingType: 'chunk' | 'entry' | 'asset' = 'asset';
 	if (kind === 'entry-point') buildNamingType = 'entry';
@@ -601,10 +608,76 @@ async function renameFile(
 
 	const resolved = path.resolve(sharedPath, newPath);
 
-	return Bun.file(resolved);
+	const np = path.parse(newPath);
+	const {root, base} = parsedPath;
+	const m = _mapping[base] || {};
+	const k = path.join(root, dir);
+	if (!m[k]) {
+		const as = path.join(np.root, np.dir, np.base);
+		if (as != path.join(k, base)) {
+			m[k] = { as, fd: Bun.file(resolved) };
+			_mapping[base] = m;
+		}
+	}
+	return m[k]?.fd || Bun.file(resolved);
 }
 
 const html = (options?: BunPluginHTMLOptions): BunPlugin => {
+	let _replacePathStrings = !(options?.replacePathStrings === false);
+	const _mapping: {[key: string]: any} = {};
+	const _saved: {[key: string]: boolean} = {};
+
+	const save = async (name: string,
+		body: Blob | NodeJS.TypedArray | ArrayBufferLike | string | Bun.BlobPart[],
+		options?: {
+			mode?: number;
+			createPath?: boolean;
+		}, outdir?: string) => {
+		if (_saved[name]) return; // avoid duplicated-saving a file
+		_saved[name] = true;
+		if (!_replacePathStrings || typeof body != "string") {
+			return await Bun.write(name, body, options);
+		}
+		// replace mapping items string inside body
+		let content: string = body;
+		Object.keys(_mapping).forEach(k => {
+			const kx = k.replace(/\./g, "\\.");
+			const r = new RegExp(`(['"])[^'"\\n]*${kx}([?#][][^'"]*)?\\1|\\([^)\\n'"]*${kx}([?#][^'")]*)?\\)`, "g");
+			const m = content.match(r);
+			if (!m) return;
+			// host relative dir
+			const rel = path.relative(outdir || '.', path.parse(name).dir);
+			const mk = _mapping[k];
+			for (let i = 0; i < m.length; i++) {
+				const mi: string = m[i];
+				let [prefix, key, suffix]: string[] = [
+						mi.substring(0,1),
+						mi.substring(1, mi.length -1),
+						mi.substring(mi.length -1),
+				];
+				if (isURL(key)) continue;
+				const mx = key.match(/[?#]/);
+				if(mx?.index) { // with extra query or hash
+					suffix = key.substring(mx.index) + suffix;
+					key = key.substring(0, mx.index);
+				}
+				for (const dir in mk) {
+					const fl = path.join(dir, k);
+					let as = mk[dir].as;
+					if (key.startsWith("/")) {
+		 					as = `/${as}`;
+					} else if(key.replace(/^\.\//, "") != fl.replace(/^\.\//, "")) {
+		 					const idir = path.parse(path.join(rel, key)).dir;
+		 					if (idir != dir) continue; // dir
+		 					as = path.relative(rel, as);
+					}
+					content = content.replace(m[i], `${prefix}${as}${suffix}`);
+				}
+			}
+		});
+		return await Bun.write(name, content, options);
+	}
+
 	return {
 		name: 'bun-plugin-html',
 		async setup(build) {
@@ -682,6 +755,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 					details.hash,
 					details.kind,
 					commonPath,
+					_mapping,
 				);
 				if (!newFile.name) continue;
 				let filePath = removeCommonPath(newFile.name, commonPath);
@@ -707,9 +781,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				([file, details]) => details.kind !== 'entry-point',
 			)) {
 				if (!file.name || !details.content) continue;
-				await Bun.write(file.name, details.content, {
-					createPath: true,
-				});
+				await save(file.name!, details.content!, {
+					createPath: true
+				}, build.config.outdir);
 
 				if (!details.attribute) continue;
 				const attribute = details.attribute;
@@ -742,9 +816,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 					: fileContents;
 
 				if (!file.name) continue;
-				await Bun.write(file.name, fileContents, {
+				await save(file.name, fileContents, {
 					createPath: true,
-				});
+				}, build.config.outdir);
 			}
 		},
 	};
