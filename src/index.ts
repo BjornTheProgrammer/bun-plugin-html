@@ -477,10 +477,10 @@ async function forStyleFiles(
 
 interface PathMapping {
 	[key: string]: {
-    [subkey: string]: {
-      as: string;
-      fd: BunFile;
-    };
+		[subkey: string]: {
+			as: string;
+			fd: BunFile;
+		};
 	};
 }
 
@@ -808,8 +808,8 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			)) {
 				if (!file.name || !details.content) continue;
 				await save(
-					file.name,
-					details.content,
+					file.name!,
+					details.content!,
 					{
 						createPath: true,
 					},
