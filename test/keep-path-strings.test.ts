@@ -3,17 +3,17 @@ import fs from 'node:fs';
 import html from '../src/index';
 import { emptyDir } from './utils';
 
-describe('Testing keepPathStrings', async () => {
+describe('Testing keepOriginalPaths', async () => {
 	const generationDirectory = './test/generation/keep-path-strings';
 	if (fs.existsSync(generationDirectory)) emptyDir(generationDirectory);
 
-	test('Checking keepPathStrings is true', async () => {
+	test('Checking keepOriginalPaths is true', async () => {
 		await Bun.build({
 			entrypoints: ['./test/splitting/keep-path-strings.html'],
 			outdir: generationDirectory,
 			plugins: [
 				html({
-					keepPathStrings: true,
+					keepOriginalPaths: true,
 				}),
 			],
 			root: '.',
@@ -29,13 +29,13 @@ describe('Testing keepPathStrings', async () => {
 		expect(content.indexOf('y.ts') > -1).toBeTrue();
 	});
 
-	test('Checking keepPathStrings is string[]', async () => {
+	test('Checking keepOriginalPaths is string[]', async () => {
 		await Bun.build({
 			entrypoints: ['./test/splitting/keep-path-strings.html'],
 			outdir: generationDirectory,
 			plugins: [
 				html({
-					keepPathStrings: ['y.ts'],
+					keepOriginalPaths: ['y.ts'],
 				}),
 			],
 			root: '.',
@@ -51,7 +51,7 @@ describe('Testing keepPathStrings', async () => {
 		expect(content.indexOf('y.ts') > -1).toBeTrue();
 	});
 
-	test('Checking no keepPathStrings', async () => {
+	test('Checking no keepOriginalPaths', async () => {
 		await Bun.build({
 			entrypoints: ['./test/splitting/keep-path-strings.html'],
 			outdir: generationDirectory,
