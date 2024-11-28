@@ -7,8 +7,8 @@
         </style>
     </head>
     <body>
-        <div class="testing" data-src="x.ts" data-test="y.ts">Hello</div>
+        <div class="testing" data-src="x.ts" data-test="y.ts#hash">Hello</div>
         <script type="module" src="y.ts"></script>
-        <script> console.log(await fecth("y.ts").then(resp => resp.text())) </script>
+        <script> console.log(await fecth("y.ts?query").then(resp => resp.text())) </script>
     </body>
 </html>
