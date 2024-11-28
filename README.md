@@ -124,6 +124,8 @@ type BunPluginHTMLOptions = {
     includeExtensions?: string[];
     excludeExtensions?: string[];
     excludeSelectors?: string[];
+    preprocessor?: (processor: Processor) => void | Promise<void>;
+    keepOriginalPaths?: boolean | string[];
 };
 ```
 
@@ -271,6 +273,15 @@ await Bun.build({
     })]
 })
 ```
+
+### Keep Original Paths Option
+
+Determines whether file paths in the source code are replaced by new paths.
+| Value                                     | Result                      |
+|-------------------------------------------|-----------------------------|
+| `true`                                    | Path replacement is completely skipped. |
+| `string[]`                                | Only the specified file paths are excluded from replacement. |
+| `false` or `undefined`                    | All paths are replaced within the source code. |
 
 ## License
 

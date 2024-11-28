@@ -79,9 +79,12 @@ export type BunPluginHTMLOptions = {
 	 */
 	preprocessor?: (processor: Processor) => void | Promise<void>;
 	/**
-	 * Replace path strings
+	 * Determines whether file paths in the source code are replaced by new paths.
+	 * - If `true`, path replacement is completely skipped.
+	 * - If an array of strings is provided, only the specified file paths are excluded from replacement.
+	 * - If omitted or `false`, all paths are replaced by default.
 	 */
-	keepPathStrings?: boolean | string[];
+	keepOriginalPaths?: boolean | string[];
 };
 
 const attributesToSearch = [
@@ -652,7 +655,7 @@ async function renameFile(
 }
 
 const html = (options?: BunPluginHTMLOptions): BunPlugin => {
-	const _keepPathStrings = options?.keepPathStrings;
+	const _keepOriginalPaths = options?.keepOriginalPaths;
 	const _namedAs: NamedAs = {};
 	const _pathSaved: { [path: string]: boolean } = {};
 
@@ -664,7 +667,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 	) => {
 		if (_pathSaved[name]) return; // avoid duplicated-saving a file
 		_pathSaved[name] = true;
-		if (_keepPathStrings === true || typeof body !== 'string') {
+		if (_keepOriginalPaths === true || typeof body !== 'string') {
 			return await Bun.write(name, body, options);
 		}
 		// replace mapping items string inside body
@@ -698,14 +701,14 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 					pathString = pathString.substring(0, pathExtraTail.index);
 				}
 				if (
-					Array.isArray(_keepPathStrings) &&
-					_keepPathStrings.length > 0 &&
-					_keepPathStrings.some(
+					Array.isArray(_keepOriginalPaths) &&
+					_keepOriginalPaths.length > 0 &&
+					_keepOriginalPaths.some(
 						(s) => pathString.length >= s.length && pathString.endsWith(s),
 					)
-				) {
+				)
 					continue;
-				}
+
 				for (const originDir in asNewNames) {
 					const originPath = path.join(originDir, originName);
 					let { as: newPath } = asNewNames[originDir];
