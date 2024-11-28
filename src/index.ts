@@ -677,7 +677,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			const originName = originNames[j];
 			const originNameMatcher = originName.replace(/\./g, '\\.');
 			const clue = new RegExp(
-				`(['"])([^'"\\n]*\/)?${originNameMatcher}([?#][][^'"]*)?\\1|\\(([^)\\n'"]+\/)?${originNameMatcher}([?#][^'")]*)?\\)`,
+				`(['"])([^'"\\n]*\/)?${originNameMatcher}([?#][^'"]*)?\\1|\\(([^\\)\\n'"]+\/)?${originNameMatcher}([?#][^'"\\)]*)?\\)`,
 				'g',
 			);
 			const pathStrings = content.match(clue);
