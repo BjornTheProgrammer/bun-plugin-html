@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <style>
+        .testing::after {
+            content: "x.ts";
+        }
+        </style>
+    </head>
+    <body>
+        <div class="testing" data-src="x.ts" data-test="y.ts">Hello</div>
+        <script type="module" src="y.ts"></script>
+        <script> console.log(await fecth("y.ts").then(resp => resp.text())) </script>
+    </body>
+</html>
