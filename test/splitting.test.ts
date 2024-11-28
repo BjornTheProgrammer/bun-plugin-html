@@ -53,6 +53,6 @@ describe('Testing Splitting', async () => {
 	test('Checking .scss compiled', async () => {
 		const m = content.match(/style-[^.]+.css/);
 		expect(m?.length).toBe(1);
-		expect(fs.existsSync(`${generationDirectory}/${m[0]}`));
+		expect(fs.existsSync(`${generationDirectory}/${m?.[0]}`));
 	});
 });

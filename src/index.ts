@@ -3,7 +3,7 @@
 
 import fs from 'node:fs/promises';
 import os from 'node:os';
-import path from 'node:path';
+import path, { resolve } from 'node:path';
 import {
 	type BuildArtifact,
 	type BuildConfig,
@@ -81,7 +81,7 @@ export type BunPluginHTMLOptions = {
 	/**
 	 * Replace path strings
 	 */
-	replacePathStrings?: boolean;
+	keepPathStrings?: boolean | string[];
 };
 
 const attributesToSearch = [
@@ -475,9 +475,9 @@ async function forStyleFiles(
 	}
 }
 
-interface PathMapping {
-	[key: string]: {
-		[subkey: string]: {
+interface NamedAs {
+	[name: string]: {
+		[dir: string]: {
 			as: string;
 			fd: BunFile;
 		};
@@ -575,6 +575,29 @@ async function processHtmlFiles(
 	return toChangeAttributes;
 }
 
+function keepNamedAs(
+	parsedOriginPath: path.ParsedPath,
+	parsedNewPath: path.ParsedPath,
+	resolved: string,
+	namedAs: NamedAs,
+) {
+	const { root, dir, base } = parsedOriginPath;
+	const names = namedAs[base] || {};
+	const nameDir = path.join(root, dir);
+	if (!names[nameDir]) {
+		const as = path.join(
+			parsedNewPath.root,
+			parsedNewPath.dir,
+			parsedNewPath.base,
+		);
+		if (as !== path.join(nameDir, base)) {
+			names[nameDir] = { as, fd: Bun.file(resolved) };
+			namedAs[base] = names;
+		}
+	}
+	return names[nameDir];
+}
+
 async function renameFile(
 	options: BunPluginHTMLOptions | undefined,
 	build: PluginBuilder,
@@ -582,7 +605,7 @@ async function renameFile(
 	hash: string,
 	kind: BuildArtifact['kind'],
 	sharedPath: string,
-	_mapping: PathMapping,
+	namedAs: NamedAs,
 ) {
 	let buildNamingType: 'chunk' | 'entry' | 'asset' = 'asset';
 	if (kind === 'entry-point') buildNamingType = 'entry';
@@ -623,29 +646,15 @@ async function renameFile(
 
 	const resolved = path.resolve(sharedPath, newPath);
 
-	const parsedNewPath = path.parse(newPath);
-	const { root: originalRoot, base: originalBase } = parsedPath;
-	const mappingForBase = _mapping[originalBase] || {};
-	const mappingKey = path.join(originalRoot, dir);
-	if (!mappingForBase[mappingKey]) {
-		const as = path.join(
-			parsedNewPath.root,
-			parsedNewPath.dir,
-			parsedNewPath.base,
-		);
-		if (as !== path.join(mappingKey, originalBase)) {
-			mappingForBase[mappingKey] = { as, fd: Bun.file(resolved) };
-			_mapping[originalBase] = mappingForBase;
-		}
-	}
-
-	return mappingForBase[mappingKey]?.fd || Bun.file(resolved);
+	const newPathParsed = path.parse(newPath);
+	const named = keepNamedAs(parsedPath, newPathParsed, resolved, namedAs);
+	return named?.fd || Bun.file(resolved);
 }
 
 const html = (options?: BunPluginHTMLOptions): BunPlugin => {
-	const _replacePathStrings = !(options?.replacePathStrings === false);
-	const _mapping: PathMapping = {};
-	const _saved: { [key: string]: boolean } = {};
+	const _keepPathStrings = options?.keepPathStrings;
+	const _namedAs: NamedAs = {};
+	const _pathSaved: { [path: string]: boolean } = {};
 
 	const save = async (
 		name: string,
@@ -653,51 +662,63 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 		options?: Parameters<typeof Bun.write>[2],
 		outdir?: string,
 	) => {
-		if (_saved[name]) return; // avoid duplicated-saving a file
-		_saved[name] = true;
-		if (!_replacePathStrings || typeof body !== 'string') {
+		if (_pathSaved[name]) return; // avoid duplicated-saving a file
+		_pathSaved[name] = true;
+		if (_keepPathStrings === true || typeof body !== 'string') {
 			return await Bun.write(name, body, options);
 		}
 		// replace mapping items string inside body
 		let content = body;
-		const keylist = Object.keys(_mapping);
-		for (let j = 0; j < keylist.length; j++) {
-			const k = keylist[j];
-			const kx = k.replace(/\./g, '\\.');
-			const r = new RegExp(
-				`(['"])[^'"\\n]*${kx}([?#][][^'"]*)?\\1|\\([^)\\n'"]*${kx}([?#][^'")]*)?\\)`,
+		// host relative dir
+		const hostDir = path.relative(outdir || '.', path.parse(name).dir);
+
+		const originNames = Object.keys(_namedAs);
+		for (let j = 0; j < originNames.length; j++) {
+			const originName = originNames[j];
+			const originNameMatcher = originName.replace(/\./g, '\\.');
+			const clue = new RegExp(
+				`(['"])([^'"\\n]*\/)?${originNameMatcher}([?#][][^'"]*)?\\1|\\(([^)\\n'"]+\/)?${originNameMatcher}([?#][^'")]*)?\\)`,
 				'g',
 			);
-			const m = content.match(r);
-			if (!m) continue;
-			// host relative dir
-			const rel = path.relative(outdir || '.', path.parse(name).dir);
-			const mk = _mapping[k];
-			for (let i = 0; i < m.length; i++) {
-				const mi: string = m[i];
-				let [prefix, key, suffix]: string[] = [
-					mi.substring(0, 1),
-					mi.substring(1, mi.length - 1),
-					mi.substring(mi.length - 1),
+			const pathStrings = content.match(clue);
+			if (!pathStrings) continue;
+			const asNewNames = _namedAs[originName];
+			for (let i = 0; i < pathStrings.length; i++) {
+				const pathStrCtx: string = pathStrings[i];
+				let [prefix, pathString, suffix]: string[] = [
+					pathStrCtx.substring(0, 1),
+					pathStrCtx.substring(1, pathStrCtx.length - 1),
+					pathStrCtx.substring(pathStrCtx.length - 1),
 				];
-				if (isURL(key)) continue;
-				const mx = key.match(/[?#]/);
-				if (mx?.index) {
+				if (isURL(pathString)) continue;
+				const pathExtraTail = pathString.match(/[?#]/);
+				if (pathExtraTail?.index) {
 					// with extra query or hash
-					suffix = key.substring(mx.index) + suffix;
-					key = key.substring(0, mx.index);
+					suffix = pathString.substring(pathExtraTail.index) + suffix;
+					pathString = pathString.substring(0, pathExtraTail.index);
 				}
-				for (const dir in mk) {
-					const fl = path.join(dir, k);
-					let as = mk[dir].as;
-					if (key.startsWith('/')) {
-						as = `/${as}`;
-					} else if (key.replace(/^\.\//, '') !== fl.replace(/^\.\//, '')) {
-						const idir = path.parse(path.join(rel, key)).dir;
-						if (idir !== dir) continue; // dir
-						as = path.relative(rel, as);
+				if (
+					Array.isArray(_keepPathStrings) &&
+					_keepPathStrings.length > 0 &&
+					_keepPathStrings.some(
+						(s) => pathString.length >= s.length && pathString.endsWith(s),
+					)
+				) {
+					continue;
+				}
+				for (const originDir in asNewNames) {
+					const originPath = path.join(originDir, originName);
+					let { as: newPath } = asNewNames[originDir];
+					if (pathString.startsWith('/')) {
+						newPath = `/${newPath}`;
+					} else if (
+						pathString.replace(/^\.\//, '') !== originPath.replace(/^\.\//, '')
+					) {
+						const pathStrDir = path.parse(path.join(hostDir, pathString)).dir;
+						if (pathStrDir !== originDir) continue; // same dir
+						newPath = path.relative(hostDir, newPath);
 					}
-					content = content.replace(m[i], `${prefix}${as}${suffix}`);
+					content = content.replace(pathStrCtx, `${prefix}${newPath}${suffix}`);
 				}
 			}
 		}
@@ -759,10 +780,19 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 
 				if (buildExtensions.includes(extension)) {
 					let filePath = removeCommonPath(file.name, commonPath);
+					const parsedNewPath = path.parse(filePath);
 					if (build.config.outdir)
 						filePath = path.resolve(build.config.outdir, filePath);
+					const named = details.originalPath
+						? keepNamedAs(
+								path.parse(removeCommonPath(details.originalPath, commonPath)),
+								parsedNewPath,
+								filePath,
+								_namedAs,
+							)
+						: undefined;
 					newFiles.push([
-						Bun.file(filePath),
+						named?.fd || Bun.file(filePath),
 						{
 							content,
 							attribute: details.attribute,
@@ -781,7 +811,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 					details.hash,
 					details.kind,
 					commonPath,
-					_mapping,
+					_namedAs,
 				);
 				if (!newFile.name) continue;
 				let filePath = removeCommonPath(newFile.name, commonPath);
