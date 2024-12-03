@@ -347,6 +347,12 @@ async function forJsFiles(
 							resolved = Bun.resolveSync(args.path, options.pathToResolveFrom);
 						} else {
 							resolved = path.resolve(args.importer, '../', args.path);
+							if (
+								!isModule &&
+								(await fs.exists(resolved)) &&
+								(await fs.lstat(resolved)).isDirectory()
+							)
+								resolved = Bun.resolveSync(args.path, resolved);
 
 							if (build.config.splitting) {
 								external = true;
@@ -393,7 +399,9 @@ async function forJsFiles(
 				customResolver({
 					pathToResolveFrom: commonPath,
 				}),
-				...build.config.plugins,
+				...build.config.plugins.filter(
+					(plugin) => plugin.name !== 'bun-plugin-html',
+				),
 			],
 			root: build.config.root || commonPath,
 		});
@@ -552,9 +560,13 @@ async function processHtmlFiles(
 						toChangeAttributes.push((rewriter: HTMLRewriter) => {
 							rewriter.on(selector, {
 								async element(el) {
-									let content =
-										(await contentToString(details.content)) ||
-										(await file.text());
+									const contentToStringThing = await contentToString(
+										details.content,
+									);
+									let content: string;
+									if (details.content === undefined)
+										content = await file.text();
+									else content = await contentToString(details.content);
 									content = content.replaceAll(/(<)(\/script>)/g, '\\x3C$2');
 
 									el.removeAttribute('src');
