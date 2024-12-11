@@ -544,7 +544,10 @@ async function processHtmlFiles(
 	buildExtensions: readonly string[],
 ) {
 	const htmlFiles = getExtensionFiles(files, ['.html', '.htm']);
-	const toChangeAttributes: ((rewriter: HTMLRewriter) => void)[] = [];
+	const toChangeAttributes: ((
+		rewriter: HTMLRewriter,
+		fileLocation: string,
+	) => void)[] = [];
 
 	if (!htmlFiles) return toChangeAttributes;
 
@@ -810,6 +813,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			await forJsFiles(options, build, files, buildExtensions, htmlOptions);
 			if (!build.config.experimentalCss)
 				await forStyleFiles(options, build, htmlOptions, files);
+
 			const attributesToChange = await processHtmlFiles(
 				options,
 				build,
@@ -902,17 +906,21 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				const selector = attributeToSelector(attribute);
 				const extension = path.parse(file.name).ext;
 
-				attributesToChange.push((rewriter) => {
+				attributesToChange.push((rewriter, fileLocation) => {
 					rewriter.on(selector, {
 						element(el) {
 							if (el.getAttribute(attribute.name) === null || !file.name)
 								return;
-							let path = removeCommonPath(file.name, commonPathOutput);
-							if (buildExtensions.includes(extension))
-								path = changeFileExtension(path, '.js');
 
-							const resolved = Bun.resolveSync(path, details.htmlImporter);
-							el.setAttribute(attribute.name, resolved);
+							let filePath = path.relative(
+								path.dirname(fileLocation),
+								file.name,
+							);
+
+							if (buildExtensions.includes(extension))
+								filePath = changeFileExtension(filePath, '.js');
+
+							el.setAttribute(attribute.name, filePath);
 						},
 					});
 				});
@@ -923,7 +931,8 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 			)) {
 				let fileContents = await contentToString(details.content);
 				const rewriter = new HTMLRewriter();
-				for (const item of attributesToChange) item(rewriter);
+				for (const item of attributesToChange)
+					item(rewriter, file.name as string);
 				fileContents = rewriter.transform(fileContents);
 				fileContents = build.config.minify
 					? await minify(fileContents, htmlOptions)

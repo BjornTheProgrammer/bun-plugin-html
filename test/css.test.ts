@@ -22,6 +22,5 @@ describe('Testing Generation of HTML', async () => {
 		naming: '[dir]/[name].[ext]',
 	});
 
-	// testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
-	// testIfFileExists(generationDirectory, expectedDirectory, 'index.js');
+	testIfFileExists(generationDirectory, expectedDirectory, 'index.html');
 });
