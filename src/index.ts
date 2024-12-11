@@ -123,8 +123,8 @@ async function getAllFiles(
 	const files: File[] = [];
 	const rewriter = new HTMLRewriter();
 
-	const resolvedPath = path.resolve(filePath);
-	const originalFile = Bun.file(resolvedPath);
+	const htmlResolvedPath = path.resolve(filePath);
+	const originalFile = Bun.file(htmlResolvedPath);
 	let fileText = await originalFile.text();
 
 	const hash = Bun.hash(fileText, 1).toString(16).slice(0, 8);
@@ -134,7 +134,8 @@ async function getAllFiles(
 		details: {
 			kind: 'entry-point',
 			hash,
-			originalPath: resolvedPath,
+			originalPath: htmlResolvedPath,
+			htmlImporter: htmlResolvedPath,
 		},
 	});
 
@@ -193,6 +194,7 @@ async function getAllFiles(
 					},
 					hash,
 					originalPath: resolvedPath,
+					htmlImporter: htmlResolvedPath,
 				},
 			});
 		},
@@ -450,6 +452,7 @@ async function forJsFiles(
 					kind: jsFiles[index].details.kind,
 					hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
 					originalPath: jsFiles[index].details.originalPath,
+					htmlImporter: jsFiles[index].details.htmlImporter,
 				});
 			} else {
 				files.set(Bun.file(filePath), {
@@ -457,6 +460,7 @@ async function forJsFiles(
 					kind: output.kind,
 					hash: output.hash || Bun.hash(outputText, 1).toString(16).slice(0, 8),
 					originalPath: false,
+					htmlImporter: jsFiles[index].details.htmlImporter,
 				});
 			}
 		}
@@ -507,6 +511,7 @@ async function forStyleFiles(
 				kind: item.details.kind,
 				hash: Bun.hash(content, 1).toString(16).slice(0, 8),
 				originalPath: originalPath,
+				htmlImporter: item.details.htmlImporter,
 			});
 		else files.delete(file);
 	}
@@ -843,6 +848,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							kind: details.kind,
 							hash: details.hash,
 							originalPath: details.originalPath,
+							htmlImporter: details.htmlImporter,
 						},
 					]);
 					continue;
@@ -869,6 +875,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 						kind: details.kind,
 						hash: details.hash,
 						originalPath: details.originalPath,
+						htmlImporter: details.htmlImporter,
 					},
 				]);
 			}
@@ -903,7 +910,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 							let path = removeCommonPath(file.name, commonPathOutput);
 							if (buildExtensions.includes(extension))
 								path = changeFileExtension(path, '.js');
-							el.setAttribute(attribute.name, `./${path}`);
+
+							const resolved = Bun.resolveSync(path, details.htmlImporter);
+							el.setAttribute(attribute.name, resolved);
 						},
 					});
 				});
