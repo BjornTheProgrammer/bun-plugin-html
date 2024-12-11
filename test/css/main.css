@@ -1,0 +1,5 @@
+@import url("./import.css");
+
+* {
+	border-color: red;
+}

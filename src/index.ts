@@ -271,9 +271,19 @@ async function forJsFiles(
 	build: PluginBuilder,
 	files: Map<BunFile, FileDetails>,
 	buildExtensions: readonly string[],
+	htmlOptions: HTMLTerserOptions,
 ) {
 	const jsFiles = getExtensionFiles(files, buildExtensions);
 	for (const item of jsFiles) files.delete(item.file);
+
+	if (build.config.experimentalCss) {
+		const cssFiles = await forStyleFiles(options, build, htmlOptions, files);
+		if (cssFiles) {
+			for (const file of cssFiles) {
+				jsFiles.push(file);
+			}
+		}
+	}
 
 	if (!jsFiles) return;
 
@@ -431,7 +441,7 @@ async function forJsFiles(
 				filePath = filePath.replace(tempDirPath, commonPath);
 			}
 
-			if (output.kind === 'entry-point') {
+			if (output.kind === 'entry-point' || output.loader === 'css') {
 				if (!jsFiles[index].file.name) continue;
 				entrypointToOutput.set(jsFiles[index].file.name, filePath);
 				files.set(Bun.file(filePath), {
@@ -489,14 +499,19 @@ async function forStyleFiles(
 		} else {
 			content = cssMinifier(content);
 		}
-		files.set(file, {
-			content,
-			attribute: item.details.attribute,
-			kind: item.details.kind,
-			hash: Bun.hash(content, 1).toString(16).slice(0, 8),
-			originalPath: originalPath,
-		});
+
+		if (!build.config.experimentalCss)
+			files.set(file, {
+				content,
+				attribute: item.details.attribute,
+				kind: item.details.kind,
+				hash: Bun.hash(content, 1).toString(16).slice(0, 8),
+				originalPath: originalPath,
+			});
+		else files.delete(file);
 	}
+
+	if (build.config.experimentalCss) return cssFiles;
 }
 
 interface NamedAs {
@@ -787,8 +802,9 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				files = processor.export();
 			}
 
-			await forJsFiles(options, build, files, buildExtensions);
-			await forStyleFiles(options, build, htmlOptions, files);
+			await forJsFiles(options, build, files, buildExtensions, htmlOptions);
+			if (!build.config.experimentalCss)
+				await forStyleFiles(options, build, htmlOptions, files);
 			const attributesToChange = await processHtmlFiles(
 				options,
 				build,
