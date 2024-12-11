@@ -15,6 +15,7 @@ export type FileDetails = {
 	kind: BuildArtifact['kind'];
 	hash: string;
 	originalPath: string | false;
+	htmlImporter: string;
 };
 
 const urlTester = /^(#|http[s]:\/\/)/i;
@@ -156,6 +157,7 @@ export class Processor {
 				hash: Bun.hash(content, 1).toString(16).slice(0, 8),
 				content,
 				originalPath: filepath,
+				htmlImporter: '',
 			});
 		}
 	}
