@@ -348,12 +348,22 @@ async function forJsFiles(
 						} else {
 							resolved = path.resolve(args.importer, '../', args.path);
 
-							if (!isModule && (await fs.exists(resolved))) {
-								if ((await fs.lstat(resolved)).isDirectory()) {
-									if (requiresTempDir) resolved = Bun.resolveSync(args.path, originalPath);
-									else resolved = Bun.resolveSync('.', resolved);
+							const exists = await fs.exists(resolved);
+
+							if (!isModule) {
+								if (exists) {
+									if ((await fs.lstat(resolved)).isDirectory()) {
+										if (requiresTempDir)
+											resolved = Bun.resolveSync(args.path, originalPath);
+										else resolved = Bun.resolveSync('.', resolved);
+									} else {
+										resolved = Bun.resolveSync(
+											args.path,
+											path.parse(args.importer).dir,
+										);
+									}
 								} else {
-									resolved = Bun.resolveSync(args.path, path.parse(args.importer).dir);
+									resolved = Bun.resolveSync('.', resolved);
 								}
 							}
 

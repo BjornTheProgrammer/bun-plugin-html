@@ -1,4 +1,4 @@
-import { fromJs } from './js'
+import { fromJs } from './js';
 
 console.log('Running JS for browser');
 
