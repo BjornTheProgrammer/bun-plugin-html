@@ -1,7 +1,13 @@
-// /private/var/folders/xp/2h79jwp12nq0qc6hrr1lhlb00000gn/T/bun-build-HoxMXo/js/third.js
+// /private/var/folders/xp/2h79jwp12nq0qc6hrr1lhlb00000gn/T/bun-build-C77PJ9/js/third.js
 var third_default = { hello: "world" };
 
-// ../../../../../private/var/folders/xp/2h79jwp12nq0qc6hrr1lhlb00000gn/T/bun-build-HoxMXo/main.ts
+// /Users/bjorn/Documents/GitHub/bun-plugin-html/test/starting/js/index.ts
+function fromJs() {
+  console.log("from js/index.ts");
+}
+
+// ../../../../../private/var/folders/xp/2h79jwp12nq0qc6hrr1lhlb00000gn/T/bun-build-C77PJ9/main.ts
 console.log(third_default);
 console.log("Running JS for browser");
+fromJs();
 document.querySelector("#js-target").innerHTML = "Changed!";

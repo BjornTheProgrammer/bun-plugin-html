@@ -14,8 +14,14 @@
 		<p id="js-target">This should be changed by JS</p>
 		<p id="cljs-target">This should be changed by CLJS</p>
 	</div>
-	<script>// test/starting/main.ts
+	<script>// /Users/bjorn/Documents/GitHub/bun-plugin-html/test/starting/js/index.ts
+function fromJs() {
+  console.log("from js/index.ts");
+}
+
+// test/starting/main.ts
 console.log("Running JS for browser");
+fromJs();
 document.querySelector("#js-target").innerHTML = "Changed!";
 </script>
 	<script>var __create = Object.create;

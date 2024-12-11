@@ -347,12 +347,15 @@ async function forJsFiles(
 							resolved = Bun.resolveSync(args.path, options.pathToResolveFrom);
 						} else {
 							resolved = path.resolve(args.importer, '../', args.path);
-							if (
-								!isModule &&
-								(await fs.exists(resolved)) &&
-								(await fs.lstat(resolved)).isDirectory()
-							)
-								resolved = Bun.resolveSync(args.path, resolved);
+
+							if (!isModule && (await fs.exists(resolved))) {
+								if ((await fs.lstat(resolved)).isDirectory()) {
+									if (requiresTempDir) resolved = Bun.resolveSync(args.path, originalPath);
+									else resolved = Bun.resolveSync('.', resolved);
+								} else {
+									resolved = Bun.resolveSync(args.path, path.parse(args.importer).dir);
+								}
+							}
 
 							if (build.config.splitting) {
 								external = true;
