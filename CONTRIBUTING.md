@@ -26,7 +26,7 @@ You're now ready to start developing! Just make your desired changes to the repo
 
 Ensure that if you're adding another feature to always add a new test.
 
-After you are finished with all of your changes, and you wish to make a pull request, first ensure all tests are passing when running `bun run test`, then run `burn run lint` to see if there are any linting issues. You can automatically fix some of the issues with `bun run lint:fix`.
+After you are finished with all of your changes, and you wish to make a pull request, first ensure all tests are passing when running `bun run test`, then run `bun run lint` to see if there are any linting issues. You can automatically fix some of the issues with `bun run lint:fix`.
 
 That's it! Just create a pull request with your changes, and we'll try to review it quickly!
 
