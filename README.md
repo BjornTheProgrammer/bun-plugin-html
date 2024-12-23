@@ -2,6 +2,10 @@
 
 The `bun-plugin-html` is a plugin for the Bun build tool that enables `.html` file entrypoints. This document instructions on how to install, use, and configure the plugin.
 
+> [!IMPORTANT]
+> With bun v1.2 the html loader will be [stabilized](https://github.com/oven-sh/bun/issues/4688). This plugin will still be updated if any issues occur,
+> but it is recommended that you use the built-in loader.
+
 ## Installation
 
 You can install `bun-plugin-html` using the following command:
