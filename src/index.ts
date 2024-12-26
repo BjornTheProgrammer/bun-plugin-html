@@ -616,6 +616,9 @@ async function processHtmlFiles(
 				} else {
 					files.set(file, {
 						...details,
+						hash: Bun.hash(await file.arrayBuffer(), 1)
+							.toString(16)
+							.slice(0, 8),
 						kind: 'asset',
 					});
 				}
