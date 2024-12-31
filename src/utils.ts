@@ -18,7 +18,7 @@ export type FileDetails = {
 	htmlImporter: string;
 };
 
-const urlTester = /^(#|http[s]:\/\/)/i;
+const urlTester = /^(#|http[s]:\/\/|\/)/i;
 export function isURL(link: string) {
 	if (urlTester.test(link)) {
 		return true;
