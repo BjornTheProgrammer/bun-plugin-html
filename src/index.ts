@@ -44,11 +44,11 @@ export type BunPluginHTMLOptions = {
 	 * css and js files.
 	 */
 	inline?:
-		| boolean
-		| {
-				css?: boolean;
-				js?: boolean;
-		  };
+	| boolean
+	| {
+		css?: boolean;
+		js?: boolean;
+	};
 	/**
 	 * `bun-plugin-html` already respects the default naming rules of Bun.build, but if you wish to override
 	 * that behavior for the naming of css files, then you can do so here.
@@ -59,7 +59,7 @@ export type BunPluginHTMLOptions = {
 	/**
 	 * Choose how the content is minified, if `Bun.build({ minify: true })` is set.
 	 */
-	minifyOptions?: HTMLTerserOptions;
+	minifyOptions?: HtmlMinifyOptions;
 	/**
 	 * Choose what extensions to include in building of javascript files with `Bun.build`.
 	 *
@@ -102,12 +102,17 @@ const extensionsToBuild: readonly string[] = [
 	'.tsx',
 ] as const;
 const selectorsToExclude: readonly string[] = ['a'] as const;
-export const defaultMinifyOptions: HTMLTerserOptions = {
+
+export type HtmlMinifyOptions = HTMLTerserOptions & {
+	minifyHTML: boolean
+}
+export const defaultMinifyOptions: HtmlMinifyOptions = {
 	collapseWhitespace: true,
 	collapseInlineTagWhitespace: true,
 	caseSensitive: true,
 	minifyCSS: {},
 	minifyJS: true,
+	minifyHTML: true,
 	removeComments: true,
 	removeRedundantAttributes: true,
 } as const;
@@ -223,7 +228,7 @@ function getExtensionFiles(
 
 function getCSSMinifier(
 	config: BuildConfig,
-	options: HTMLTerserOptions,
+	options: HtmlMinifyOptions,
 ): (text: string) => string {
 	if (config.minify && options.minifyCSS !== false) {
 		if (typeof options.minifyCSS === 'function') {
@@ -250,7 +255,7 @@ function getCSSMinifier(
 
 function getJSMinifier(
 	config: BuildConfig,
-	options: HTMLTerserOptions,
+	options: HtmlMinifyOptions,
 ): (text: string) => Promise<string> {
 	const noop = async (text: string) => text;
 	if (config.minify) {
@@ -273,7 +278,7 @@ async function forJsFiles(
 	build: PluginBuilder,
 	files: Map<BunFile, FileDetails>,
 	buildExtensions: readonly string[],
-	htmlOptions: HTMLTerserOptions,
+	htmlOptions: HtmlMinifyOptions,
 ) {
 	const jsFiles = getExtensionFiles(files, buildExtensions);
 	for (const item of jsFiles) files.delete(item.file);
@@ -485,7 +490,7 @@ async function forJsFiles(
 async function forStyleFiles(
 	options: BunPluginHTMLOptions | undefined,
 	build: PluginBuilder,
-	htmlOptions: HTMLTerserOptions,
+	htmlOptions: HtmlMinifyOptions,
 	files: Map<BunFile, FileDetails>,
 ) {
 	const cssMinifier = getCSSMinifier(build.config, htmlOptions);
@@ -841,11 +846,11 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 						filePath = path.resolve(build.config.outdir, filePath);
 					const named = details.originalPath
 						? keepNamedAs(
-								path.parse(removeCommonPath(details.originalPath, commonPath)),
-								parsedNewPath,
-								filePath,
-								_namedAs,
-							)
+							path.parse(removeCommonPath(details.originalPath, commonPath)),
+							parsedNewPath,
+							filePath,
+							_namedAs,
+						)
 						: undefined;
 					newFiles.push([
 						named?.fd || Bun.file(filePath),
@@ -940,7 +945,7 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				for (const item of attributesToChange)
 					item(rewriter, file.name as string);
 				fileContents = rewriter.transform(fileContents);
-				fileContents = build.config.minify
+				fileContents = build.config.minify && htmlOptions.minifyHTML
 					? await minify(fileContents, htmlOptions)
 					: fileContents;
 

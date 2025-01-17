@@ -168,11 +168,12 @@ By setting the `inline` option to `true`, you can choose to inline CSS and/or JS
 
 ### MinifyOptions Option
 
-Use `minifyOptions` to configure [`html-minifier-terser`](https://github.com/terser/html-minifier-terser?tab=readme-ov-file#options-quick-reference). 
+Use `minifyOptions` to configure [`html-minifier-terser`](https://github.com/terser/html-minifier-terser?tab=readme-ov-file#options-quick-reference).
 
-The `minifyCSS` and `minifyJS` fields enable further configuration of 
-[`clean-css`](https://github.com/clean-css/clean-css?tab=readme-ov-file#constructor-options) and 
+The `minifyCSS` and `minifyJS` fields enable further configuration of
+[`clean-css`](https://github.com/clean-css/clean-css?tab=readme-ov-file#constructor-options) and
 [`terser`](https://github.com/terser/terser?tab=readme-ov-file#minify-options), respectively.
+Additionally minifyHTML is an added option, which can be disabled to skip html minification.
 
 The following default options are exported as `defaultMinifyOptions`:
 ```ts
@@ -182,12 +183,14 @@ The following default options are exported as `defaultMinifyOptions`:
     caseSensitive: true,
     minifyCSS: {},
     minifyJS: true,
+    minifyHTML: true,
     removeComments: true,
     removeRedundantAttributes: true,
 }
 ```
 
-`minifyCSS` and `minifyJS` can both be set to either `true`, `false`, a configuration object, or a callback function. The different 
+`minifyCSS` and `minifyJS` can both be set to either `true`, `false`, a configuration object, or a callback function.
+`minifyHTML` can only be set to either `true`, `false`. The different
 values of `minifyCSS` and `minifyJS` behave as follows:
 
 #### MinifyCSS
@@ -209,9 +212,16 @@ values of `minifyCSS` and `minifyJS` behave as follows:
 | `{ opts } `                                  | JS minification is performed with the provided options using `terser`. No minification is performed by `Bun.build` |
 | `((text: string, inline: boolean) => string)`| Your function is called for every JS element encoutered and should return minified content. |
 
+#### MinifyHTML
+
+| Value                                        | Result                      |
+|----------------------------------------------|-----------------------------|
+| `false`                                      | HTML minification is skipped |
+| `true` or `undefined`                        | HTML minification is performed by `terser`|
+
 ### IncludeExtensions Option
 
-The `includeExtensions` option takes an array of strings. Any files whose extensions match any of those strings will be passed to 
+The `includeExtensions` option takes an array of strings. Any files whose extensions match any of those strings will be passed to
 `Bun.build` (in addition to `['.js', '.jsx', '.ts', '.tsx']`).
 
 **Note: you must ensure an appropriate plugin is included for each file extension.**
