@@ -104,7 +104,7 @@ const extensionsToBuild: readonly string[] = [
 const selectorsToExclude: readonly string[] = ['a'] as const;
 
 export type HtmlMinifyOptions = HTMLTerserOptions & {
-	minifyHTML: boolean;
+	minifyHTML?: boolean;
 };
 export const defaultMinifyOptions: HtmlMinifyOptions = {
 	collapseWhitespace: true,

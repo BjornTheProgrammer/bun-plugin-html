@@ -219,6 +219,9 @@ values of `minifyCSS` and `minifyJS` behave as follows:
 | `false`                                      | HTML minification is skipped |
 | `true` or `undefined`                        | HTML minification is performed by `terser`|
 
+An important consideration when using the `minifyHTML` option, is that it will skip minification done by the terser completely.
+This includes any originally inlined scripts and css. They will still be minified with `clean-css` and `Bun.build` when imported.
+
 ### IncludeExtensions Option
 
 The `includeExtensions` option takes an array of strings. Any files whose extensions match any of those strings will be passed to
