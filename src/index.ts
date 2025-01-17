@@ -44,11 +44,11 @@ export type BunPluginHTMLOptions = {
 	 * css and js files.
 	 */
 	inline?:
-	| boolean
-	| {
-		css?: boolean;
-		js?: boolean;
-	};
+		| boolean
+		| {
+				css?: boolean;
+				js?: boolean;
+		  };
 	/**
 	 * `bun-plugin-html` already respects the default naming rules of Bun.build, but if you wish to override
 	 * that behavior for the naming of css files, then you can do so here.
@@ -104,8 +104,8 @@ const extensionsToBuild: readonly string[] = [
 const selectorsToExclude: readonly string[] = ['a'] as const;
 
 export type HtmlMinifyOptions = HTMLTerserOptions & {
-	minifyHTML: boolean
-}
+	minifyHTML: boolean;
+};
 export const defaultMinifyOptions: HtmlMinifyOptions = {
 	collapseWhitespace: true,
 	collapseInlineTagWhitespace: true,
@@ -846,11 +846,11 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 						filePath = path.resolve(build.config.outdir, filePath);
 					const named = details.originalPath
 						? keepNamedAs(
-							path.parse(removeCommonPath(details.originalPath, commonPath)),
-							parsedNewPath,
-							filePath,
-							_namedAs,
-						)
+								path.parse(removeCommonPath(details.originalPath, commonPath)),
+								parsedNewPath,
+								filePath,
+								_namedAs,
+							)
 						: undefined;
 					newFiles.push([
 						named?.fd || Bun.file(filePath),
@@ -945,9 +945,10 @@ const html = (options?: BunPluginHTMLOptions): BunPlugin => {
 				for (const item of attributesToChange)
 					item(rewriter, file.name as string);
 				fileContents = rewriter.transform(fileContents);
-				fileContents = build.config.minify && htmlOptions.minifyHTML
-					? await minify(fileContents, htmlOptions)
-					: fileContents;
+				fileContents =
+					build.config.minify && htmlOptions.minifyHTML
+						? await minify(fileContents, htmlOptions)
+						: fileContents;
 
 				const { name } = file;
 				if (!name) continue;

@@ -14,11 +14,13 @@ describe('Testing Generation of Minified HTML', async () => {
 		entrypoints: ['./test/starting/index.html'],
 		outdir: generationDirectory,
 		minify: true,
-		plugins: [html({
-			minifyOptions: {
-				minifyHTML: false
-			}
-		})],
+		plugins: [
+			html({
+				minifyOptions: {
+					minifyHTML: false,
+				},
+			}),
+		],
 		naming: '[dir]/[name].[ext]',
 	});
 

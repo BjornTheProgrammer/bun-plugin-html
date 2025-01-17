@@ -35,15 +35,8 @@
 	},
 	"bugs": "https://github.com/BjornTheProgrammer/bun-plugin-html/issues",
 	"description": "A plugin for bun build which allows html entrypoints.",
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"bun",
-		"plugin",
-		"build",
-		"bun.build"
-	],
+	"files": ["dist"],
+	"keywords": ["bun", "plugin", "build", "bun.build"],
 	"license": "MIT",
 	"scripts": {
 		"start": "bun run src/index.ts",
