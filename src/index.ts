@@ -85,6 +85,11 @@ export type BunPluginHTMLOptions = {
 	 * - If omitted or `false`, all paths are replaced by default.
 	 */
 	keepOriginalPaths?: boolean | string[];
+	/**
+	 * Whether or not to suppress errors from being logged when building. Useful for when you know what
+	 * you are doing works, but are still getting errors. `true` means that the errors won't be logged.
+	 */
+	suppressErrors?: boolean;
 };
 
 const attributesToSearch = [
@@ -180,12 +185,14 @@ async function getAllFiles(
 					) +
 					`${line}`.length +
 					1;
-				console.log(getLines(fileText, 4, line + 1));
-				console.log('^'.padStart(columnNumber));
-				console.error(
-					`HTMLParseError: Specified <${el.tagName}> ${attributeName} '${attributeValue}' does not exist!`,
-				);
-				console.log(`	  at ${filePath}:${line}:${columnNumber}`);
+				if (options?.suppressErrors !== true) {
+					console.log(getLines(fileText, 4, line + 1));
+					console.log('^'.padStart(columnNumber));
+					console.error(
+						`bun-plugin-html - HTMLParseError: Specified <${el.tagName}> ${attributeName} '${attributeValue}' does not exist!`,
+					);
+					console.log(`	  at ${filePath}:${line}:${columnNumber}`);
+				}
 				return;
 			}
 
@@ -335,7 +342,7 @@ async function forJsFiles(
 		resolved: string;
 	}[] = [];
 
-	const customResolver = (options: {
+	const customResolver = (resolverOptions: {
 		pathToResolveFrom: string;
 	}): BunPlugin => {
 		return {
@@ -349,7 +356,7 @@ async function forJsFiles(
 						const tempPath = path.resolve(tempDirPath, args.path);
 						const originalPath = path.resolve(
 							args.path,
-							options.pathToResolveFrom,
+							resolverOptions.pathToResolveFrom,
 						);
 
 						// Check if the path is a module
@@ -361,7 +368,10 @@ async function forJsFiles(
 						if (await Bun.file(tempPath).exists()) {
 							resolved = Bun.resolveSync(args.path, tempDirPath);
 						} else if (isModule || (await Bun.file(originalPath).exists())) {
-							resolved = Bun.resolveSync(args.path, options.pathToResolveFrom);
+							resolved = Bun.resolveSync(
+								args.path,
+								resolverOptions.pathToResolveFrom,
+							);
 						} else {
 							resolved = path.resolve(args.importer, '../', args.path);
 
@@ -400,12 +410,16 @@ async function forJsFiles(
 							external,
 						};
 					} catch (error) {
-						console.error('Error during module resolution:');
-						console.error('Potential reasons:');
-						console.error('- Missing file in specified paths');
-						console.error('- Invalid file type (non-JS file)');
-						console.error('If unresolved, please report to `bun-plugin-html`.');
-						console.error(error);
+						if (options?.suppressErrors !== true) {
+							console.error('Error during module resolution:');
+							console.error('Potential reasons:');
+							console.error('- Missing file in specified paths');
+							console.error('- Invalid file type (non-JS file)');
+							console.error(
+								'If unresolved, please report to `bun-plugin-html`.',
+							);
+							console.error(error);
+						}
 
 						// Return an empty path to prevent build failure
 						return {
@@ -436,7 +450,7 @@ async function forJsFiles(
 			root: build.config.root || commonPath,
 		});
 
-		if (!result.success) {
+		if (!result.success && options?.suppressErrors !== true) {
 			console.error(result.logs);
 		}
 

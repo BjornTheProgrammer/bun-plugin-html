@@ -300,6 +300,9 @@ Determines whether file paths in the source code are replaced by new paths.
 | `string[]`                                | Only the specified file paths are excluded from replacement. |
 | `false` or `undefined`                    | All paths are replaced within the source code. |
 
+### Suppress Errors
+Determines whether errors are supressed. Default is false.
+
 ## License
 
 This plugin is licensed under MIT.
